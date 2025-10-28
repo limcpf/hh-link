@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hkhr.link.db.UserMapper">
+
+    <!--
+      Oracle에서 USER는 예약어입니다. 테이블명을 USERS로 가정합니다.
+      필요 시 스키마 접두사(BATCH.USERS 등)를 붙여주세요.
+    -->
+
+    <insert id="insertOne" parameterType="com.hkhr.link.db.UserRow">
+        INSERT INTO USERS (EMP_ID, EMP_NM)
+        VALUES (#{empId}, #{empNm})
+    </insert>
+
+    <insert id="insertAll" parameterType="java.util.List">
+        INSERT ALL
+        <foreach collection="list" item="item">
+            INTO USERS (EMP_ID, EMP_NM) VALUES (#{item.empId}, #{item.empNm})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+</mapper>
+

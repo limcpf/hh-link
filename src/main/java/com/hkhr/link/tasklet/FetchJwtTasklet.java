@@ -1,0 +1,54 @@
+package com.hkhr.link.tasklet;
+
+import com.hkhr.link.config.AppSettings;
+import com.hkhr.link.domain.Domain;
+import com.hkhr.link.service.JwtService;
+import com.hkhr.link.util.DebugSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.StepContribution;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
+
+public class FetchJwtTasklet implements Tasklet {
+    private static final Logger log = LoggerFactory.getLogger(FetchJwtTasklet.class);
+
+    private final Domain domain;
+    private final JwtService jwtService;
+    private final AppSettings settings;
+
+    public FetchJwtTasklet(Domain domain, JwtService jwtService, AppSettings settings) {
+        this.domain = domain;
+        this.jwtService = jwtService;
+        this.settings = settings;
+    }
+
+    @Override
+    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        StepExecution stepExecution = chunkContext.getStepContext().getStepExecution();
+        DebugSupport debug = DebugSupport.from(stepExecution, settings.getOutputDir());
+        String token;
+        if (debug.enabled) {
+            JwtService.JwtFetchResult r = jwtService.fetchTokenWithRaw(domain.key());
+            token = r.token;
+            // dump request/response and token
+            if (debug.shouldDump()) {
+                String masked = DebugSupport.maskToken(token, debug.dumpSensitive);
+                StringBuilder sb = new StringBuilder();
+                sb.append("tokenUrl=\"").append(settings.getAuthTokenUrl(domain.key())).append("\"\n");
+                String svcKey = settings.getAuthServiceKey(domain.key());
+                String svcMasked = debug.dumpSensitive ? svcKey : DebugSupport.maskToken(svcKey, false);
+                sb.append("serviceKey=").append(svcMasked).append("\n");
+                debug.write("jwt/jwt-" + domain.key() + ".txt", sb.toString());
+                debug.write("jwt/token-response-" + domain.key() + ".json", r.rawBody != null ? r.rawBody : "");
+            }
+        } else {
+            token = jwtService.fetchToken(domain.key());
+        }
+        stepExecution.getJobExecution().getExecutionContext().putString("jwt." + domain.key(), token);
+        log.info("Stored jwt.{} in JobExecutionContext", domain.key());
+        return RepeatStatus.FINISHED;
+    }
+}

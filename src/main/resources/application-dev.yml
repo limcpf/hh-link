@@ -1,0 +1,30 @@
+# Development profile values (example placeholders)
+auth:
+  user:
+    service-key: "DEV_USER_SERVICE_KEY"
+    token-url: "https://dev-auth.example.com/user/token"
+  organization:
+    service-key: "DEV_ORG_SERVICE_KEY"
+    token-url: "https://dev-auth.example.com/org/token"
+  attend:
+    service-key: "DEV_ATTEND_SERVICE_KEY"
+    token-url: "https://dev-auth.example.com/attend/token"
+  apply:
+    service-key: "DEV_APPLY_SERVICE_KEY"
+    token-url: "https://dev-auth.example.com/apply/token"
+  account:
+    service-key: "DEV_ACCOUNT_SERVICE_KEY"
+    token-url: "https://dev-auth.example.com/account/token"
+
+endpoints:
+  user:
+    list-url: "https://dev-api.example.com/users"
+  organization:
+    list-url: "https://dev-api.example.com/organizations"
+  attend:
+    by-user-url-template: "https://dev-api.example.com/attend?userId={userId}"
+  apply:
+    by-user-url-template: "https://dev-api.example.com/apply?userId={userId}"
+  account:
+    by-user-url-template: "https://dev-api.example.com/accounts?userId={userId}"
+

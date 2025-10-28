@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: hkhr-link-batch
+  profiles:
+    active: dev
+  main:
+    web-application-type: none
+  batch:
+    job:
+      enabled: true
+    jdbc:
+      initialize-schema: never
+
+# Conservative HTTP defaults; override per profile if needed
+http:
+  connect-timeout-ms: 5000
+  read-timeout-ms: 15000
+
+output:
+  dir: target/out
+  overwrite: false
+  pretty: false
+
+fetch:
+  max-threads: 1
+  continue-on-error: false
+
+# Place endpoint/auth values in profile-specific files (dev/prod)
+
+mybatis:
+  mapper-locations: classpath*:mappers/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+db:
+  batch-size: 500
