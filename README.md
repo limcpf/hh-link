@@ -50,6 +50,29 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
   - 종속 도메인: `api/<domain>/req-by-user-<userId>.json`, `api/<domain>/resp-by-user-<userId>.json`
   - 기본은 마스킹된 값 저장. `dump-sensitive=true`일 때 원문 저장
 
+## 외부 설정/비밀 값 주입
+- 개념: JAR 내부 `application*.yml`은 기본값, 운영 값은 외부 파일/환경변수/명령줄로 덮어쓰기
+- 권장: 외부 설정 디렉터리 사용
+  - 서버에 `/opt/app/conf/application-prod.yml` 배치
+  - 리포 템플릿: `conf/application-prod.yml.sample:1`
+  - 실행 예:
+    ```bash
+    java -jar target/hkhr-link-batch-0.1.0-SNAPSHOT.jar \
+      --spring.profiles.active=prod \
+      --spring.config.additional-location=file:/opt/app/conf/ \
+      --spring.batch.job.names=masterJob
+    ```
+- 환경변수 예(비밀 값 주입에 적합)
+  - `SPRING_PROFILES_ACTIVE=prod`
+  - `SPRING_CONFIG_ADDITIONAL_LOCATION=file:/opt/app/conf/`
+  - `SPRING_DATASOURCE_URL=jdbc:oracle:thin:@//db-host:1521/PROD`
+  - `SPRING_DATASOURCE_USERNAME=BATCH`, `SPRING_DATASOURCE_PASSWORD=******`
+  - 커스텀: `AUTH_USER_SERVICE_KEY=...`, `ENDPOINTS_USER_LIST_URL=...`, `OUTPUT_DIR=/data/hkhr/out`
+- 주의
+  - 수동 DDL 사용 시: `spring.batch.jdbc.initialize-schema=never`
+  - 사설 CA 사용 시 JVM 옵션으로 truststore 지정(예시):
+    `-Djavax.net.ssl.trustStore=/path/truststore.jks -Djavax.net.ssl.trustStorePassword=*****`
+
 ## 산출물
 - `target/out/users.json`, `organizations.json`, `attends.json`, `applies.json`, `accounts.json`
 - 모두 "최상위 배열" 구조로 스트리밍 방식으로 저장됩니다.

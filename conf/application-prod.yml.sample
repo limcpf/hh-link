@@ -1,0 +1,71 @@
+# External production config (sample)
+# Copy to your host (e.g., /opt/app/conf/application-prod.yml) and edit values.
+
+spring:
+  profiles:
+    active: prod
+  datasource:
+    url: jdbc:oracle:thin:@//db-host:1521/PROD
+    username: BATCH
+    password: "CHANGE_ME"
+  batch:
+    jdbc:
+      initialize-schema: never
+  main:
+    web-application-type: none
+
+# Auth per domain (fill with real values)
+auth:
+  user:
+    service-key: "CHANGE_ME_USER"
+    token-url: "https://auth.internal/user/token"
+  organization:
+    service-key: "CHANGE_ME_ORG"
+    token-url: "https://auth.internal/org/token"
+  attend:
+    service-key: "CHANGE_ME_ATTEND"
+    token-url: "https://auth.internal/attend/token"
+  apply:
+    service-key: "CHANGE_ME_APPLY"
+    token-url: "https://auth.internal/apply/token"
+  account:
+    service-key: "CHANGE_ME_ACCOUNT"
+    token-url: "https://auth.internal/account/token"
+
+# API endpoints
+endpoints:
+  user:
+    list-url: "https://api.internal/users"
+  organization:
+    list-url: "https://api.internal/organizations"
+  attend:
+    by-user-url-template: "https://api.internal/attend?userId={userId}"
+  apply:
+    by-user-url-template: "https://api.internal/apply?userId={userId}"
+  account:
+    by-user-url-template: "https://api.internal/accounts?userId={userId}"
+
+# Output
+output:
+  dir: /data/hkhr/out
+  overwrite: false
+  pretty: false
+
+# HTTP timeouts
+http:
+  connect-timeout-ms: 5000
+  read-timeout-ms: 15000
+
+# Performance
+fetch:
+  max-threads: 4
+  continue-on-error: false
+
+# Optional: MyBatis batch size for DB import example
+db:
+  batch-size: 500
+
+# Note: If your TLS uses a private CA, add JVM options at runtime, not here:
+#   -Djavax.net.ssl.trustStore=/path/truststore.jks \
+#   -Djavax.net.ssl.trustStorePassword=******
+
