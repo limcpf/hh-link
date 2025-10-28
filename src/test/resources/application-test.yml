@@ -1,0 +1,21 @@
+spring:
+  main:
+    web-application-type: none
+  datasource:
+    url: jdbc:h2:mem:batchtest;MODE=Oracle;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
+
+# Disable scheduling during tests
+spring.task.scheduling.enabled: false
+
+# Reduce noise
+logging.level.org.springframework.batch: WARN
+logging.level.org.mybatis: WARN
+logging.level.org.springframework.jdbc: WARN
