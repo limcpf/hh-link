@@ -1,1 +1,6 @@
+/Users/lim/Prj/others/hkhr-link/src/test/java/com/hkhr/link/service/JwtServiceTest.java
 /Users/lim/Prj/others/hkhr-link/src/test/java/com/hkhr/link/ContextLoadTest.java
+/Users/lim/Prj/others/hkhr-link/src/test/java/com/hkhr/link/tasklet/InsertUsersFromJsonTaskletTest.java
+/Users/lim/Prj/others/hkhr-link/src/test/java/com/hkhr/link/schedule/MasterJobSchedulerTest.java
+/Users/lim/Prj/others/hkhr-link/src/test/java/com/hkhr/link/util/JsonArrayFileWriterTest.java
+/Users/lim/Prj/others/hkhr-link/src/test/java/com/hkhr/link/tasklet/FetchAndSaveJsonTaskletTest.java
