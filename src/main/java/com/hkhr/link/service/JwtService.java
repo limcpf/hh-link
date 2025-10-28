@@ -49,12 +49,11 @@ public class JwtService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        Map<String, String> body = new HashMap<>();
-        body.put("serviceKey", serviceKey);
-        HttpEntity<Map<String, String>> req = new HttpEntity<>(body, headers);
+        headers.set("servicekey", serviceKey);
+        HttpEntity<Void> req = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<String> resp = restTemplate.postForEntity(tokenUrl, req, String.class);
+            ResponseEntity<String> resp = restTemplate.exchange(tokenUrl, HttpMethod.POST, req, String.class);
             if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
                 throw new IllegalStateException("Token endpoint non-2xx for domain " + domain + ": " + resp.getStatusCode());
             }

@@ -36,14 +36,19 @@ auth:
 endpoints:
   user:
     list-url: "https://api.internal/users"
+    request-payload: '{"active": true}'
   organization:
     list-url: "https://api.internal/organizations"
+    request-payload: '{"active": true}'
   attend:
-    by-user-url-template: "https://api.internal/attend?userId={userId}"
+    by-user-url-template: "https://api.internal/attend"
+    by-user-payload-template: '{"userId": "{userId}"}'
   apply:
-    by-user-url-template: "https://api.internal/apply?userId={userId}"
+    by-user-url-template: "https://api.internal/apply"
+    by-user-payload-template: '{"userId": "{userId}"}'
   account:
-    by-user-url-template: "https://api.internal/accounts?userId={userId}"
+    by-user-url-template: "https://api.internal/accounts"
+    by-user-payload-template: '{"userId": "{userId}"}'
 
 # Output
 output:
@@ -68,4 +73,3 @@ db:
 # Note: If your TLS uses a private CA, add JVM options at runtime, not here:
 #   -Djavax.net.ssl.trustStore=/path/truststore.jks \
 #   -Djavax.net.ssl.trustStorePassword=******
-

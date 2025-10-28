@@ -31,7 +31,8 @@ class FetchAndSaveJsonTaskletTest {
     void independentDomain_writesArrayOrObject(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
-                .withProperty("endpoints.user.list-url", "http://mock/users");
+                .withProperty("endpoints.user.list-url", "http://mock/users")
+                .withProperty("endpoints.user.request-payload", "{\"active\":true}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
@@ -39,7 +40,7 @@ class FetchAndSaveJsonTaskletTest {
 
         // First run: array response
         server.expect(requestTo("http://mock/users"))
-                .andExpect(method(HttpMethod.GET))
+                .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("[{\"a\":1},{\"b\":2}]", MediaType.APPLICATION_JSON));
 
         FetchAndSaveJsonTasklet t = new FetchAndSaveJsonTasklet(Domain.USER, settings, rt);
@@ -59,7 +60,7 @@ class FetchAndSaveJsonTaskletTest {
         env.setProperty("output.overwrite", "true");
         server.reset();
         server.expect(requestTo("http://mock/users"))
-                .andExpect(method(HttpMethod.GET))
+                .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("{\"x\":1}", MediaType.APPLICATION_JSON));
         t.execute(new StepContribution(se), new ChunkContext(new StepContext(se)));
         server.verify();
@@ -77,16 +78,17 @@ class FetchAndSaveJsonTaskletTest {
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
                 .withProperty("fetch.max-threads", "1")
-                .withProperty("endpoints.attend.by-user-url-template", "http://mock/attend?userId={userId}");
+                .withProperty("endpoints.attend.by-user-url-template", "http://mock/attend")
+                .withProperty("endpoints.attend.by-user-payload-template", "{\"userId\":\"{userId}\"}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(rt);
-        server.expect(requestTo("http://mock/attend?userId=U1"))
-                .andExpect(method(HttpMethod.GET))
+        server.expect(requestTo("http://mock/attend"))
+                .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("{\"u\":\"U1\"}", MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://mock/attend?userId=U2"))
-                .andExpect(method(HttpMethod.GET))
+        server.expect(requestTo("http://mock/attend"))
+                .andExpect(method(HttpMethod.POST))
                 .andRespond(withSuccess("[{\"u\":\"U2a\"},{\"u\":\"U2b\"}]", MediaType.APPLICATION_JSON));
 
         FetchAndSaveJsonTasklet t = new FetchAndSaveJsonTasklet(Domain.ATTEND, settings, rt);
@@ -103,4 +105,3 @@ class FetchAndSaveJsonTaskletTest {
         assertThat(arr.size()).isEqualTo(3);
     }
 }
-

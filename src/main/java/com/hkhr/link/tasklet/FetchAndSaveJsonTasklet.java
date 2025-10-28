@@ -74,19 +74,23 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         try (JsonArrayFileWriter writer = new JsonArrayFileWriter(outPath, settings.isPretty())) {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + token);
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
 
             if (domain.isIndependent()) {
                 String listUrl = settings.getListUrl(domain);
                 if (listUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".list-url");
+                String payload = settings.getRequestPayload(domain);
+                if (payload == null || payload.trim().isEmpty()) payload = "{}";
                 if (debug.enabled && debug.shouldDump()) {
                     String reqMeta = "{\n" +
-                            "  \"method\": \"GET\",\n" +
+                            "  \"method\": \"POST\",\n" +
                             "  \"url\": \"" + listUrl + "\",\n" +
-                            "  \"authorization\": \"" + DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive) + "\"\n" +
+                            "  \"authorization\": \"" + DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive) + "\",\n" +
+                            "  \"payload\": " + payload + "\n" +
                             "}";
                     debug.write("api/" + domain.key() + "/req-list.json", reqMeta);
                 }
-                ResponseEntity<String> resp = exchange(listUrl, headers);
+                ResponseEntity<String> resp = restTemplate.exchange(listUrl, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
                 totalItems = appendResponseBody(writer, resp.getBody());
                 log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
                 if (debug.enabled && debug.shouldDump()) {
@@ -109,18 +113,22 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                         String tpl = settings.getByUserUrlTemplate(domain);
                         if (tpl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".by-user-url-template");
                         String url = tpl.replace("{userId}", urlEncode(userId));
+                        String payloadTpl = settings.getByUserPayloadTemplate(domain);
+                        String payload = payloadTpl != null && !payloadTpl.trim().isEmpty() ? payloadTpl : "{\"userId\":\"{userId}\"}";
+                        payload = payload.replace("{userId}", escapeJson(userId));
                         try {
                             if (debug.enabled && debug.shouldDump()) {
                                 String reqMeta = "{\n" +
-                                        "  \"method\": \"GET\",\n" +
+                                        "  \"method\": \"POST\",\n" +
                                         "  \"url\": \"" + url + "\",\n" +
                                         "  \"userId\": \"" + DebugSupport.sanitize(userId) + "\",\n" +
-                                        "  \"authorization\": \"" + DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive) + "\"\n" +
+                                        "  \"authorization\": \"" + DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive) + "\",\n" +
+                                        "  \"payload\": " + payload + "\n" +
                                         "}";
                                 String fname = "api/" + domain.key() + "/req-by-user-" + DebugSupport.sanitize(userId) + ".json";
                                 debug.write(fname, reqMeta);
                             }
-                            ResponseEntity<String> resp = exchange(url, headers);
+                            ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
                             long added = appendResponseBody(writer, resp.getBody());
                             if (debug.enabled && debug.shouldDump()) {
                                 String fname = "api/" + domain.key() + "/resp-by-user-" + DebugSupport.sanitize(userId) + ".json";
@@ -160,12 +168,9 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private ResponseEntity<String> exchange(String url, HttpHeaders headers) {
-        try {
-            return restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
-        } catch (RestClientResponseException e) {
-            throw new IllegalStateException("HTTP " + e.getRawStatusCode() + " from " + url + ": " + e.getResponseBodyAsString(), e);
-        }
+    private String escapeJson(String v) {
+        if (v == null) return "";
+        return v.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
     private long appendResponseBody(JsonArrayFileWriter writer, String body) throws IOException {

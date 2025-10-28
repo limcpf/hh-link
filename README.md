@@ -14,9 +14,9 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 
 ## 설정 키
 - 인증: `auth.<domain>.service-key`, `auth.<domain>.token-url`
-- 엔드포인트:
-  - 독립 도메인: `endpoints.<domain>.list-url`
-  - 종속 도메인: `endpoints.<domain>.by-user-url-template` (예: `.../attend?userId={userId}`)
+- 엔드포인트(모두 POST + JSON Payload)
+  - 독립 도메인: `endpoints.<domain>.list-url` + `endpoints.<domain>.request-payload`(JSON 문자열, 기본 `{}`)
+  - 종속 도메인: `endpoints.<domain>.by-user-url-template` + `endpoints.<domain>.by-user-payload-template` (예: `{ "userId": "{userId}" }`)
 - 출력: `output.dir`(기본 `target/out`), `output.overwrite`(기본 false), `output.pretty`(기본 false)
 - HTTP: `http.connect-timeout-ms`, `http.read-timeout-ms`
 - 성능: `fetch.max-threads`(기본 1), `fetch.continue-on-error`(기본 false)
@@ -78,13 +78,15 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - 모두 "최상위 배열" 구조로 스트리밍 방식으로 저장됩니다.
 
 ## 구현 메모
-- 독립 도메인(user, organization): `list-url` 1회 호출 → 배열이면 항목 병합, 객체면 1개 항목으로 저장
-- 종속 도메인(attend, apply, account): `users.json`의 `userId`(없으면 `id`)를 순회하며 `{userId}`를 템플릿에 바인딩하여 호출. 결과가 배열이면 항목 병합, 객체면 1개 항목으로 저장
+- 인증 토큰(FetchJWT): `servicekey` 헤더에 평문 Service Key를 넣어 POST 호출 → `{ "jwt": "..." }` 응답에서 토큰 추출
+- 독립 도메인(user, organization): `list-url`로 POST + JSON Payload(`request-payload`) 1회 호출 → 배열이면 항목 병합, 객체면 1개 항목으로 저장
+- 종속 도메인(attend, apply, account): `users.json`의 `userId`(없으면 `id`)를 순회하며 `by-user-url-template`로 POST 호출, Body는 `by-user-payload-template`에 `{userId}` 바인딩. 결과가 배열이면 항목 병합, 객체면 1개 항목으로 저장
 - 실패 정책: 기본 오류 시 Step 실패. `fetch.continue-on-error=true` 시 해당 사용자만 스킵하고 계속
 - 병렬: `fetch.max-threads>1`이면 사용자 단위 병렬 호출. 파일 쓰기는 내부적으로 동기화되어 일관성 유지
 
 ## 주의사항
-- 실제 토큰 응답(JSON)에서 키는 `token`, `jwt`, `access_token` 중 하나여야 합니다(필요 시 서비스 요구에 맞게 수정 가능)
+- 토큰 요청 시 헤더 키는 정확히 `servicekey`를 사용합니다.
+- 실제 토큰 응답(JSON)에서 키는 기본적으로 `jwt`를 기대하며, 호환 위해 `token`, `access_token`도 지원합니다.
 - `users.json`은 최상위 배열이어야 하며 각 항목에 `userId` 또는 `id` 필드를 포함해야 합니다.
 
 ## 파일 구조

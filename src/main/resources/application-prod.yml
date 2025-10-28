@@ -19,12 +19,16 @@ auth:
 endpoints:
   user:
     list-url: "https://api.example.com/users"
+    request-payload: '{"active": true}'
   organization:
     list-url: "https://api.example.com/organizations"
+    request-payload: '{"active": true}'
   attend:
-    by-user-url-template: "https://api.example.com/attend?userId={userId}"
+    by-user-url-template: "https://api.example.com/attend"
+    by-user-payload-template: '{"userId": "{userId}"}'
   apply:
-    by-user-url-template: "https://api.example.com/apply?userId={userId}"
+    by-user-url-template: "https://api.example.com/apply"
+    by-user-payload-template: '{"userId": "{userId}"}'
   account:
-    by-user-url-template: "https://api.example.com/accounts?userId={userId}"
-
+    by-user-url-template: "https://api.example.com/accounts"
+    by-user-payload-template: '{"userId": "{userId}"}'

@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.hkhr.link.schedule.MasterJobSchedulerTest
--------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.24 s - in com.hkhr.link.schedule.MasterJobSchedulerTest
