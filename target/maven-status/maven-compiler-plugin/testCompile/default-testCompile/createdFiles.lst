@@ -1,4 +1,5 @@
 com/hkhr/link/util/JsonArrayFileWriterTest.class
 com/hkhr/link/tasklet/InsertUsersFromJsonTaskletTest.class
+com/hkhr/link/tasklet/FetchAndSaveJsonTaskletTest.class
 com/hkhr/link/ContextLoadTest.class
 com/hkhr/link/service/JwtServiceTest.class
