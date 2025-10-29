@@ -96,11 +96,29 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                             "}";
                     debug.write("api/" + domain.key() + "/req-list.json", reqMeta);
                 }
-                ResponseEntity<String> resp = restTemplate.exchange(listUrl, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
-                totalItems = appendResponseBody(writer, resp.getBody());
-                log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
-                if (debug.enabled && debug.shouldDump()) {
-                    debug.write("api/" + domain.key() + "/resp-list.json", resp.getBody() == null ? "" : resp.getBody());
+                try {
+                    ResponseEntity<String> resp = restTemplate.exchange(listUrl, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
+                    totalItems = appendResponseBody(writer, resp.getBody());
+                    log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
+                    if (debug.enabled && debug.shouldDump()) {
+                        debug.write("api/" + domain.key() + "/resp-list.json", resp.getBody() == null ? "" : resp.getBody());
+                    }
+                } catch (Exception e) {
+                    if (debug.enabled) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("ERROR list call\n");
+                        sb.append("url=").append(listUrl).append('\n');
+                        sb.append("auth=").append(DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive)).append('\n');
+                        sb.append("payload=").append(payload).append('\n');
+                        if (e instanceof org.springframework.web.client.RestClientResponseException) {
+                            org.springframework.web.client.RestClientResponseException r = (org.springframework.web.client.RestClientResponseException)e;
+                            sb.append("status=").append(r.getRawStatusCode()).append('\n');
+                            sb.append("responseBody=").append(r.getResponseBodyAsString()).append('\n');
+                        }
+                        sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
+                        debug.write("api/" + domain.key() + "/error-list.txt", sb.toString());
+                    }
+                    throw e;
                 }
             } else {
                 // 종속 도메인: users.json 기반으로 사용자 단위 반복 호출(옵션 병렬)
@@ -143,6 +161,22 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                             }
                             return added;
                         } catch (Exception e) {
+                            if (debug.enabled) {
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("ERROR by-user call\n");
+                                sb.append("url=").append(url).append('\n');
+                                sb.append("userId=").append(userId).append('\n');
+                                sb.append("auth=").append(DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive)).append('\n');
+                                sb.append("payload=").append(payload).append('\n');
+                                if (e instanceof org.springframework.web.client.RestClientResponseException) {
+                                    org.springframework.web.client.RestClientResponseException r = (org.springframework.web.client.RestClientResponseException)e;
+                                    sb.append("status=").append(r.getRawStatusCode()).append('\n');
+                                    sb.append("responseBody=").append(r.getResponseBodyAsString()).append('\n');
+                                }
+                                sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
+                                String fname = "api/" + domain.key() + "/error-by-user-" + DebugSupport.sanitize(userId) + ".txt";
+                                debug.write(fname, sb.toString());
+                            }
                             if (settings.isContinueOnError()) {
                                 log.warn("{}: userId={} failed: {}", domain.key(), userId, e.getMessage());
                                 return 0L;

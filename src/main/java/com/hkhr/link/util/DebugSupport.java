@@ -101,4 +101,14 @@ public class DebugSupport {
         if (v == null || v.trim().isEmpty()) return def;
         try { return Integer.parseInt(v.trim()); } catch (NumberFormatException e) { return def; }
     }
+
+    // 예외의 스택트레이스를 문자열로 변환합니다.
+    public static String stackTrace(Throwable t) {
+        if (t == null) return "";
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        t.printStackTrace(pw);
+        pw.flush();
+        return sw.toString();
+    }
 }

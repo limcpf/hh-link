@@ -31,22 +31,36 @@ public class FetchJwtTasklet implements Tasklet {
         StepExecution stepExecution = chunkContext.getStepContext().getStepExecution();
         DebugSupport debug = DebugSupport.from(stepExecution, settings.getOutputDir());
         String token;
-        if (debug.enabled) {
-            JwtService.JwtFetchResult r = jwtService.fetchTokenWithRaw(domain.key());
-            token = r.token;
-            // 디버그 모드: 요청/응답 및 토큰을(마스킹 적용) 파일로 덤프
-            if (debug.shouldDump()) {
-                String masked = DebugSupport.maskToken(token, debug.dumpSensitive);
+        try {
+            if (debug.enabled) {
+                JwtService.JwtFetchResult r = jwtService.fetchTokenWithRaw(domain.key());
+                token = r.token;
+                // 디버그 모드: 요청/응답 및 토큰을(마스킹 적용) 파일로 덤프
+                if (debug.shouldDump()) {
+                    String masked = DebugSupport.maskToken(token, debug.dumpSensitive);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("tokenUrl=\"").append(settings.getAuthTokenUrl(domain.key())).append("\"\n");
+                    String svcKey = settings.getAuthServiceKey(domain.key());
+                    String svcMasked = debug.dumpSensitive ? svcKey : DebugSupport.maskToken(svcKey, false);
+                    sb.append("serviceKey=").append(svcMasked).append("\n");
+                    debug.write("jwt/jwt-" + domain.key() + ".txt", sb.toString());
+                    debug.write("jwt/token-response-" + domain.key() + ".json", r.rawBody != null ? r.rawBody : "");
+                }
+            } else {
+                token = jwtService.fetchToken(domain.key());
+            }
+        } catch (Exception e) {
+            if (debug.enabled) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("tokenUrl=\"").append(settings.getAuthTokenUrl(domain.key())).append("\"\n");
+                sb.append("ERROR jwt fetch\n");
+                sb.append("tokenUrl=").append(settings.getAuthTokenUrl(domain.key())).append('\n');
                 String svcKey = settings.getAuthServiceKey(domain.key());
                 String svcMasked = debug.dumpSensitive ? svcKey : DebugSupport.maskToken(svcKey, false);
-                sb.append("serviceKey=").append(svcMasked).append("\n");
-                debug.write("jwt/jwt-" + domain.key() + ".txt", sb.toString());
-                debug.write("jwt/token-response-" + domain.key() + ".json", r.rawBody != null ? r.rawBody : "");
+                sb.append("serviceKey=").append(svcMasked).append('\n');
+                sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
+                debug.write("jwt/error-jwt-" + domain.key() + ".txt", sb.toString());
             }
-        } else {
-            token = jwtService.fetchToken(domain.key());
+            throw e;
         }
         // 이후 스텝에서 사용하도록 JobExecutionContext에 저장
         stepExecution.getJobExecution().getExecutionContext().putString("jwt." + domain.key(), token);
