@@ -24,6 +24,7 @@ public class AppSettings {
     public String getGlobalAuthTokenUrl() { return env.getProperty("auth.token-url"); }
     public String getListUrl(String domain) { return env.getProperty("endpoints." + domain + ".list-url"); }
     public String getByUserUrlTemplate(String domain) { return env.getProperty("endpoints." + domain + ".by-user-url-template"); }
+    public String getApiUrl(String domain) { return env.getProperty("endpoints." + domain + ".url"); }
     public String getRequestPayload(String domain) { return env.getProperty("endpoints." + domain + ".request-payload"); }
     public String getByUserPayloadTemplate(String domain) { return env.getProperty("endpoints." + domain + ".by-user-payload-template"); }
 
@@ -32,6 +33,7 @@ public class AppSettings {
     public String getAuthTokenUrl(Domain domain) { return getAuthTokenUrl(domain.key()); }
     public String getListUrl(Domain domain) { return getListUrl(domain.key()); }
     public String getByUserUrlTemplate(Domain domain) { return getByUserUrlTemplate(domain.key()); }
+    public String getApiUrl(Domain domain) { return getApiUrl(domain.key()); }
     public String getRequestPayload(Domain domain) { return getRequestPayload(domain.key()); }
     public String getByUserPayloadTemplate(Domain domain) { return getByUserPayloadTemplate(domain.key()); }
 

@@ -31,20 +31,20 @@ auth:
 # API endpoints
 endpoints:
   user:
-    list-url: "https://api.internal/users"
+    url: "https://api.internal/users"
     request-payload: '{"date":"{date}"}'
   organization:
-    list-url: "https://api.internal/organizations"
+    url: "https://api.internal/organizations"
     request-payload: '{"date":"{date}"}'
   attend:
-    by-user-url-template: "https://api.internal/attend"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
+    url: "https://api.internal/attend"
+    request-payload: '{"date":"{date}"}'
   apply:
-    by-user-url-template: "https://api.internal/apply"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
+    url: "https://api.internal/apply"
+    request-payload: '{"date":"{date}"}'
   account:
-    by-user-url-template: "https://api.internal/accounts"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
+    url: "https://api.internal/accounts"
+    request-payload: '{"date":"{date}"}'
 
 # Output
 output:

@@ -14,17 +14,17 @@ auth:
 
 endpoints:
   user:
-    list-url: "https://api.example.com/users"
+    url: "https://api.example.com/users"
     request-payload: '{"date":"{date}"}'
   organization:
-    list-url: "https://api.example.com/organizations"
+    url: "https://api.example.com/organizations"
     request-payload: '{"date":"{date}"}'
   attend:
-    by-user-url-template: "https://api.example.com/attend"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
+    url: "https://api.example.com/attend"
+    request-payload: '{"date":"{date}"}'
   apply:
-    by-user-url-template: "https://api.example.com/apply"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
+    url: "https://api.example.com/apply"
+    request-payload: '{"date":"{date}"}'
   account:
-    by-user-url-template: "https://api.example.com/accounts"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
+    url: "https://api.example.com/accounts"
+    request-payload: '{"date":"{date}"}'

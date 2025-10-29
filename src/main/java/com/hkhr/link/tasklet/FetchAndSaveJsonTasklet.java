@@ -86,84 +86,29 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         try (JsonArrayFileWriter writer = new JsonArrayFileWriter(outPath, settings.isPretty())) {
             HttpHeaders headers = HttpJson.authJsonHeaders(token);
 
-            if (domain.isIndependent()) {
-                // 독립 도메인: 1회 POST 호출
-                String listUrl = settings.getListUrl(domain);
-                if (listUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".list-url");
-                String payload = settings.getRequestPayload(domain);
-                if (payload == null || payload.trim().isEmpty()) payload = "{}";
-                else payload = TemplateUtils.apply(payload, dateVars);
-                if (debug.enabled) {
-                    DebugDumpUtils.dumpListRequest(debug, domain.key(), listUrl,
-                            DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload);
-                }
-                try {
-                    ResponseEntity<String> resp = HttpJson.post(restTemplate, listUrl, headers, payload);
-                    totalItems = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
-                    log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
-                    if (debug.enabled) DebugDumpUtils.dumpListResponse(debug, domain.key(), resp.getBody());
-                } catch (Exception e) {
-                    if (debug.enabled) DebugDumpUtils.dumpListError(debug, domain.key(), listUrl,
-                            DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload, e);
-                    throw e;
-                }
-            } else {
-                // 종속 도메인: users.json 기반으로 사용자 단위 반복 호출(옵션 병렬)
-                Path usersPath = BatchStepUtils.usersPathForDate(settings, date);
-                if (!Files.exists(usersPath)) {
-                    throw new IllegalStateException("Dependent domain requires users.json. Not found: " + usersPath);
-                }
-                List<String> userIds = JsonBatchUtils.readUserIds(usersPath, mapper);
-                log.info("{}: will fetch by {} userIds (threads={})", domain.key(), userIds.size(), settings.getMaxThreads());
+            // 모든 도메인을 단일 API 호출로 처리
+            String apiUrl = settings.getApiUrl(domain);
+            if (apiUrl == null) apiUrl = settings.getListUrl(domain); // 하위 호환
+            if (apiUrl == null) apiUrl = settings.getByUserUrlTemplate(domain); // 최후 수단(구성 이행 전)
+            if (apiUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".url");
 
-                ExecutorService pool = settings.getMaxThreads() > 1
-                        ? Executors.newFixedThreadPool(settings.getMaxThreads())
-                        : Executors.newSingleThreadExecutor();
-                List<Future<Long>> futures = new ArrayList<>();
-                for (String userId : userIds) {
-                    futures.add(pool.submit(() -> {
-                        String tpl = settings.getByUserUrlTemplate(domain);
-                        if (tpl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".by-user-url-template");
-                        String url = tpl.replace("{userId}", urlEncode(userId));
-                        String payloadTpl = settings.getByUserPayloadTemplate(domain);
-                        String payload = payloadTpl != null && !payloadTpl.trim().isEmpty() ? payloadTpl : "{\"userId\":\"{userId}\"}";
-                        java.util.Map<String, String> vars = new java.util.HashMap<String, String>(dateVars);
-                        vars.put("userId", TemplateUtils.escapeJson(userId));
-                        payload = TemplateUtils.apply(payload, vars);
-                        try {
-                            if (debug.enabled) DebugDumpUtils.dumpByUserRequest(debug, domain.key(), userId, url,
-                                    DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload);
-                            ResponseEntity<String> resp = HttpJson.post(restTemplate, url, headers, payload);
-                            long added = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
-                            if (debug.enabled) DebugDumpUtils.dumpByUserResponse(debug, domain.key(), userId, resp.getBody());
-                            return added;
-                        } catch (Exception e) {
-                            if (debug.enabled) DebugDumpUtils.dumpByUserError(debug, domain.key(), userId, url,
-                                    DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload, e);
-                            if (settings.isContinueOnError()) {
-                                log.warn("{}: userId={} failed: {}", domain.key(), userId, e.getMessage());
-                                return 0L;
-                            }
-                            throw e;
-                        }
-                    }));
-                }
+            String payload = settings.getRequestPayload(domain);
+            if (payload == null || payload.trim().isEmpty()) payload = "{}";
+            else payload = TemplateUtils.apply(payload, dateVars);
 
-                pool.shutdown();
-                for (Future<Long> f : futures) {
-                    try {
-                        Long added = f.get();
-                        if (added != null) totalItems += added;
-                    } catch (ExecutionException ee) {
-                        failures++;
-                        pool.shutdownNow();
-                        if (!settings.isContinueOnError()) {
-                            throw new IllegalStateException("Fetching failed: " + ee.getCause().getMessage(), ee.getCause());
-                        } else {
-                            log.warn("{}: task failed but continuing: {}", domain.key(), ee.getCause().getMessage());
-                        }
-                    }
-                }
+            if (debug.enabled) {
+                DebugDumpUtils.dumpListRequest(debug, domain.key(), apiUrl,
+                        DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload);
+            }
+            try {
+                ResponseEntity<String> resp = HttpJson.post(restTemplate, apiUrl, headers, payload);
+                totalItems = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
+                log.info("{}: fetched {} items from {}", domain.key(), totalItems, apiUrl);
+                if (debug.enabled) DebugDumpUtils.dumpListResponse(debug, domain.key(), resp.getBody());
+            } catch (Exception e) {
+                if (debug.enabled) DebugDumpUtils.dumpListError(debug, domain.key(), apiUrl,
+                        DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload, e);
+                throw e;
             }
         }
 

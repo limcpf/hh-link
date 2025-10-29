@@ -32,7 +32,7 @@ class FetchAndSaveJsonTaskletTest {
     void independentDomain_writesArrayOrObject(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
-                .withProperty("endpoints.user.list-url", "http://mock/users")
+                .withProperty("endpoints.user.url", "http://mock/users")
                 .withProperty("endpoints.user.request-payload", "{\"date\":\"{date}\"}");
         AppSettings settings = new AppSettings(env);
 
@@ -75,28 +75,21 @@ class FetchAndSaveJsonTaskletTest {
     }
 
     @Test
-    void dependentDomain_iteratesUsersAndFlattens(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
-        // Prepare users.json for dependency
+    void dependentDomain_singleCall(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
         String d = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
-        Path users = tmp.resolve("users-" + d + ".json");
-        Files.write(users, "[{\"userId\":\"U1\"},{\"userId\":\"U2\"}]".getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
                 .withProperty("fetch.max-threads", "1")
-                .withProperty("endpoints.attend.by-user-url-template", "http://mock/attend")
-                .withProperty("endpoints.attend.by-user-payload-template", "{\"userId\":\"{userId}\",\"date\":\"{date}\"}");
+                .withProperty("endpoints.attend.url", "http://mock/attend")
+                .withProperty("endpoints.attend.request-payload", "{\"date\":\"{date}\"}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(rt);
         server.expect(requestTo("http://mock/attend"))
                 .andExpect(method(HttpMethod.POST))
-                .andExpect(content().string("{\"userId\":\"U1\",\"date\":\"" + d + "\"}"))
-                .andRespond(withSuccess("{\"u\":\"U1\"}", MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://mock/attend"))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(content().string("{\"userId\":\"U2\",\"date\":\"" + d + "\"}"))
+                .andExpect(content().string("{\"date\":\"" + d + "\"}"))
                 .andRespond(withSuccess("[{\"u\":\"U2a\"},{\"u\":\"U2b\"}]", MediaType.APPLICATION_JSON));
 
         FetchAndSaveJsonTasklet t = new FetchAndSaveJsonTasklet(Domain.ATTEND, settings, rt);
@@ -110,6 +103,6 @@ class FetchAndSaveJsonTaskletTest {
         Path out2 = tmp.resolve("attends-" + d + ".json");
         JsonNode arr2 = mapper.readTree(new String(Files.readAllBytes(out2), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(arr2.isArray()).isTrue();
-        assertThat(arr2.size()).isEqualTo(3);
+        assertThat(arr2.size()).isEqualTo(2);
     }
 }
