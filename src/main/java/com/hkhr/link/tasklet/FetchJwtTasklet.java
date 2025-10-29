@@ -51,14 +51,9 @@ public class FetchJwtTasklet implements Tasklet {
             }
         } catch (Exception e) {
             if (debug.enabled) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("ERROR jwt fetch\n");
-                sb.append("tokenUrl=").append(settings.getAuthTokenUrl(domain.key())).append('\n');
                 String svcKey = settings.getAuthServiceKey(domain.key());
                 String svcMasked = debug.dumpSensitive ? svcKey : DebugSupport.maskToken(svcKey, false);
-                sb.append("serviceKey=").append(svcMasked).append('\n');
-                sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
-                debug.write("jwt/error-jwt-" + domain.key() + ".txt", sb.toString());
+                com.hkhr.link.util.DebugDumpUtils.dumpJwtError(debug, domain.key(), settings.getAuthTokenUrl(domain.key()), svcMasked, e);
             }
             throw e;
         }

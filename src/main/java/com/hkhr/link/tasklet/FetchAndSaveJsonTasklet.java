@@ -13,6 +13,7 @@ import com.hkhr.link.util.TemplateUtils;
 import com.hkhr.link.util.BatchStepUtils;
 import com.hkhr.link.util.HttpJson;
 import com.hkhr.link.util.JsonBatchUtils;
+import com.hkhr.link.util.DebugDumpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -92,37 +93,18 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                 String payload = settings.getRequestPayload(domain);
                 if (payload == null || payload.trim().isEmpty()) payload = "{}";
                 else payload = TemplateUtils.apply(payload, dateVars);
-                if (debug.enabled && debug.shouldDump()) {
-                    String reqMeta = "{\n" +
-                            "  \"method\": \"POST\",\n" +
-                            "  \"url\": \"" + listUrl + "\",\n" +
-                            "  \"authorization\": \"" + DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive) + "\",\n" +
-                            "  \"payload\": " + payload + "\n" +
-                            "}";
-                    debug.write("api/" + domain.key() + "/req-list.json", reqMeta);
+                if (debug.enabled) {
+                    DebugDumpUtils.dumpListRequest(debug, domain.key(), listUrl,
+                            DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload);
                 }
                 try {
                     ResponseEntity<String> resp = HttpJson.post(restTemplate, listUrl, headers, payload);
                     totalItems = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
                     log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
-                    if (debug.enabled && debug.shouldDump()) {
-                        debug.write("api/" + domain.key() + "/resp-list.json", resp.getBody() == null ? "" : resp.getBody());
-                    }
+                    if (debug.enabled) DebugDumpUtils.dumpListResponse(debug, domain.key(), resp.getBody());
                 } catch (Exception e) {
-                    if (debug.enabled) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("ERROR list call\n");
-                        sb.append("url=").append(listUrl).append('\n');
-                        sb.append("auth=").append(DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive)).append('\n');
-                        sb.append("payload=").append(payload).append('\n');
-                        if (e instanceof org.springframework.web.client.RestClientResponseException) {
-                            org.springframework.web.client.RestClientResponseException r = (org.springframework.web.client.RestClientResponseException)e;
-                            sb.append("status=").append(r.getRawStatusCode()).append('\n');
-                            sb.append("responseBody=").append(r.getResponseBodyAsString()).append('\n');
-                        }
-                        sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
-                        debug.write("api/" + domain.key() + "/error-list.txt", sb.toString());
-                    }
+                    if (debug.enabled) DebugDumpUtils.dumpListError(debug, domain.key(), listUrl,
+                            DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload, e);
                     throw e;
                 }
             } else {
@@ -149,41 +131,15 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                         vars.put("userId", TemplateUtils.escapeJson(userId));
                         payload = TemplateUtils.apply(payload, vars);
                         try {
-                            if (debug.enabled && debug.shouldDump()) {
-                                String reqMeta = "{\n" +
-                                        "  \"method\": \"POST\",\n" +
-                                        "  \"url\": \"" + url + "\",\n" +
-                                        "  \"userId\": \"" + DebugSupport.sanitize(userId) + "\",\n" +
-                                        "  \"authorization\": \"" + DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive) + "\",\n" +
-                                        "  \"payload\": " + payload + "\n" +
-                                        "}";
-                                String fname = "api/" + domain.key() + "/req-by-user-" + DebugSupport.sanitize(userId) + ".json";
-                                debug.write(fname, reqMeta);
-                            }
+                            if (debug.enabled) DebugDumpUtils.dumpByUserRequest(debug, domain.key(), userId, url,
+                                    DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload);
                             ResponseEntity<String> resp = HttpJson.post(restTemplate, url, headers, payload);
                             long added = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
-                            if (debug.enabled && debug.shouldDump()) {
-                                String fname = "api/" + domain.key() + "/resp-by-user-" + DebugSupport.sanitize(userId) + ".json";
-                                debug.write(fname, resp.getBody() == null ? "" : resp.getBody());
-                            }
+                            if (debug.enabled) DebugDumpUtils.dumpByUserResponse(debug, domain.key(), userId, resp.getBody());
                             return added;
                         } catch (Exception e) {
-                            if (debug.enabled) {
-                                StringBuilder sb = new StringBuilder();
-                                sb.append("ERROR by-user call\n");
-                                sb.append("url=").append(url).append('\n');
-                                sb.append("userId=").append(userId).append('\n');
-                                sb.append("auth=").append(DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive)).append('\n');
-                                sb.append("payload=").append(payload).append('\n');
-                                if (e instanceof org.springframework.web.client.RestClientResponseException) {
-                                    org.springframework.web.client.RestClientResponseException r = (org.springframework.web.client.RestClientResponseException)e;
-                                    sb.append("status=").append(r.getRawStatusCode()).append('\n');
-                                    sb.append("responseBody=").append(r.getResponseBodyAsString()).append('\n');
-                                }
-                                sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
-                                String fname = "api/" + domain.key() + "/error-by-user-" + DebugSupport.sanitize(userId) + ".txt";
-                                debug.write(fname, sb.toString());
-                            }
+                            if (debug.enabled) DebugDumpUtils.dumpByUserError(debug, domain.key(), userId, url,
+                                    DebugSupport.maskAuthHeader("Bearer " + token, debug.dumpSensitive), payload, e);
                             if (settings.isContinueOnError()) {
                                 log.warn("{}: userId={} failed: {}", domain.key(), userId, e.getMessage());
                                 return 0L;
