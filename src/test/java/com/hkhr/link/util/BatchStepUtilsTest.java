@@ -24,9 +24,6 @@ class BatchStepUtilsTest {
         AppSettings settings = new AppSettings(new MockEnvironment().withProperty("output.dir", "/data/out"));
         String date = "20250103";
         Path p1 = BatchStepUtils.outputPathForDomain(settings, Domain.APPLY, date);
-        Path p2 = BatchStepUtils.usersPathForDate(settings, date);
         assertThat(p1.toString()).endsWith("applies-20250103.json");
-        assertThat(p2.toString()).endsWith("users-20250103.json");
     }
 }
-

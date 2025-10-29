@@ -21,8 +21,5 @@ public class BatchStepUtils {
         return Paths.get(settings.getOutputDir(), domain.plural() + "-" + date + ".json");
     }
 
-    public static Path usersPathForDate(AppSettings settings, String date) {
-        return Paths.get(settings.getOutputDir(), Domain.USER.plural() + "-" + date + ".json");
-    }
+    // usersPathForDate는 더 이상 사용하지 않습니다.
 }
-

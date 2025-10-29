@@ -88,8 +88,6 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
 
             // 모든 도메인을 단일 API 호출로 처리
             String apiUrl = settings.getApiUrl(domain);
-            if (apiUrl == null) apiUrl = settings.getListUrl(domain); // 하위 호환
-            if (apiUrl == null) apiUrl = settings.getByUserUrlTemplate(domain); // 최후 수단(구성 이행 전)
             if (apiUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".url");
 
             String payload = settings.getRequestPayload(domain);

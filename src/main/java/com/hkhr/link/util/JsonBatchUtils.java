@@ -23,27 +23,5 @@ public class JsonBatchUtils {
         return added;
     }
 
-    public static List<String> readUserIds(Path usersJson, ObjectMapper mapper) throws IOException {
-        List<String> ids = new ArrayList<String>();
-        JsonFactory jf = mapper.getFactory();
-        try (JsonParser p = jf.createParser(usersJson.toFile())) {
-            if (p.nextToken() != JsonToken.START_ARRAY) {
-                throw new IllegalStateException("users.json must be a top-level array: " + usersJson);
-            }
-            while (p.nextToken() != JsonToken.END_ARRAY) {
-                if (p.currentToken() == JsonToken.START_OBJECT) {
-                    String id = null;
-                    while (p.nextToken() != JsonToken.END_OBJECT) {
-                        String field = p.getCurrentName();
-                        p.nextToken();
-                        if ("userId".equals(field) || "id".equals(field)) { id = p.getValueAsString(); }
-                        else { p.skipChildren(); }
-                    }
-                    if (id != null) ids.add(id);
-                } else { p.skipChildren(); }
-            }
-        }
-        return ids;
-    }
+    // readUserIds는 더 이상 사용하지 않습니다(단일 API 호출로 통일).
 }
-

@@ -22,20 +22,15 @@ public class AppSettings {
     public String getAuthServiceKey(String domain) { return env.getProperty("auth." + domain + ".service-key"); }
     public String getAuthTokenUrl(String domain) { return env.getProperty("auth." + domain + ".token-url"); }
     public String getGlobalAuthTokenUrl() { return env.getProperty("auth.token-url"); }
-    public String getListUrl(String domain) { return env.getProperty("endpoints." + domain + ".list-url"); }
-    public String getByUserUrlTemplate(String domain) { return env.getProperty("endpoints." + domain + ".by-user-url-template"); }
+    // legacy(list/by-user) 키는 제거되었습니다. 단일 URL만 사용합니다.
     public String getApiUrl(String domain) { return env.getProperty("endpoints." + domain + ".url"); }
     public String getRequestPayload(String domain) { return env.getProperty("endpoints." + domain + ".request-payload"); }
-    public String getByUserPayloadTemplate(String domain) { return env.getProperty("endpoints." + domain + ".by-user-payload-template"); }
 
     // 인증/엔드포인트(도메인 Enum 기반 오버로드)
     public String getAuthServiceKey(Domain domain) { return getAuthServiceKey(domain.key()); }
     public String getAuthTokenUrl(Domain domain) { return getAuthTokenUrl(domain.key()); }
-    public String getListUrl(Domain domain) { return getListUrl(domain.key()); }
-    public String getByUserUrlTemplate(Domain domain) { return getByUserUrlTemplate(domain.key()); }
     public String getApiUrl(Domain domain) { return getApiUrl(domain.key()); }
     public String getRequestPayload(Domain domain) { return getRequestPayload(domain.key()); }
-    public String getByUserPayloadTemplate(Domain domain) { return getByUserPayloadTemplate(domain.key()); }
 
     // HTTP 연결/읽기 타임아웃(ms)
     public int getHttpConnectTimeoutMs() { return getInt("http.connect-timeout-ms", 5000); }
@@ -71,9 +66,7 @@ public class AppSettings {
     public int getDbBatchSize() { return getInt("db.batch-size", 500); }
 
     // 문자열 기준 독립 도메인 여부(user/organization)
-    public static boolean isIndependentDomain(String domain) {
-        return Domain.fromKey(domain) != null && Domain.fromKey(domain).isIndependent();
-    }
+    // 독립/종속 도메인 개념은 제거되었습니다.
 
     // 문자열 기준 복수형 변환(예: apply -> applies)
     public static String pluralize(String domain) {

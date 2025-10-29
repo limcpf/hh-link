@@ -28,12 +28,5 @@ class JsonBatchUtilsTest {
         assertThat(node.size()).isEqualTo(3);
     }
 
-    @Test
-    void readUserIds_readsIds(@TempDir Path tmp) throws Exception {
-        Path users = tmp.resolve("users.json");
-        Files.write(users, "[{\"userId\":\"U1\"},{\"id\":\"U2\"}]".getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        List<String> ids = JsonBatchUtils.readUserIds(users, mapper);
-        assertThat(ids).containsExactly("U1", "U2");
-    }
+    // readUserIds 제거(단일 API 호출로 통일)
 }
-
