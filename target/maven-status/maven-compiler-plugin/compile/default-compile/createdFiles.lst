@@ -13,8 +13,8 @@ com/hkhr/link/util/TemplateUtils.class
 com/hkhr/link/tasklet/FetchJwtTasklet.class
 com/hkhr/link/util/JsonBatchUtils.class
 com/hkhr/link/db/UserRow.class
+com/hkhr/link/util/enums/Domain.class
 com/hkhr/link/util/HttpJson.class
 com/hkhr/link/service/JwtService$JwtFetchResult.class
 com/hkhr/link/BatchApplication.class
 com/hkhr/link/util/JsonArrayFileWriter.class
-com/hkhr/link/domain/Domain.class

@@ -1,7 +1,7 @@
 package com.hkhr.link.tasklet;
 
 import com.hkhr.link.config.AppSettings;
-import com.hkhr.link.domain.Domain;
+import com.hkhr.link.util.enums.Domain;
 import com.hkhr.link.service.JwtService;
 import com.hkhr.link.util.DebugSupport;
 import org.slf4j.Logger;

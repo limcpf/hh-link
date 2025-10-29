@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hkhr.link.config.AppSettings;
-import com.hkhr.link.domain.Domain;
+import com.hkhr.link.util.enums.Domain;
 import com.hkhr.link.util.JsonArrayFileWriter;
 import com.hkhr.link.util.DebugSupport;
 import com.hkhr.link.util.TemplateUtils;

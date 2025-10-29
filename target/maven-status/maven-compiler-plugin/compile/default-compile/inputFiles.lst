@@ -10,10 +10,10 @@
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/tasklet/FetchJwtTasklet.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/HttpJson.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/JsonArrayFileWriter.java
+/Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/enums/Domain.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/BatchApplication.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/config/JobConfig.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/config/RestTemplateConfig.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/tasklet/InsertUsersFromJsonTasklet.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/db/UserMapper.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/DebugSupport.java
-/Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/domain/Domain.java

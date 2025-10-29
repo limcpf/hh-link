@@ -1,6 +1,6 @@
 package com.hkhr.link.config;
 
-import com.hkhr.link.domain.Domain;
+import com.hkhr.link.util.enums.Domain;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 

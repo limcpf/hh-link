@@ -1,7 +1,7 @@
 package com.hkhr.link.util;
 
 import com.hkhr.link.config.AppSettings;
-import com.hkhr.link.domain.Domain;
+import com.hkhr.link.util.enums.Domain;
 import org.springframework.batch.core.JobParameters;
 
 import java.nio.file.Path;

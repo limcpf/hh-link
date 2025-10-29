@@ -1,7 +1,7 @@
 package com.hkhr.link.util;
 
 import com.hkhr.link.config.AppSettings;
-import com.hkhr.link.domain.Domain;
+import com.hkhr.link.util.enums.Domain;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;

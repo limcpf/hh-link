@@ -1,6 +1,6 @@
 package com.hkhr.link.config;
 
-import com.hkhr.link.domain.Domain;
+import com.hkhr.link.util.enums.Domain;
 import com.hkhr.link.service.JwtService;
 import com.hkhr.link.tasklet.FetchAndSaveJsonTasklet;
 import com.hkhr.link.tasklet.FetchJwtTasklet;
