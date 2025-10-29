@@ -21,6 +21,11 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - HTTP: `http.connect-timeout-ms`, `http.read-timeout-ms`
 - 성능: `fetch.max-threads`(기본 6, 상한 6), `fetch.continue-on-error`(기본 false)
 
+### 템플릿/치환 변수
+- `{date}`: 실행 기준 날짜(형식 `yyyyMMdd`). `--requestTime=yyyyMMdd`가 있으면 해당 값, 없으면 오늘 날짜가 적용됩니다.
+- `{userId}`: 종속 도메인의 by-user 호출 바디에서 사용자 ID 치환에 사용됩니다.
+- 하위 호환: `{request_date}`도 지원되지만, `{date}` 사용을 권장합니다.
+
 ## 빌드/실행
 - 빌드: `mvn -DskipTests clean package`
 - 실행(마스터 잡):
