@@ -45,7 +45,8 @@ public class JwtService {
 
     // servicekey 헤더를 포함하여 POST로 토큰을 발급받고, 원문과 추출된 토큰을 반환
     public JwtFetchResult fetchTokenWithRaw(String domain) {
-        String tokenUrl = settings.getAuthTokenUrl(domain);
+        String tokenUrl = settings.getGlobalAuthTokenUrl();
+        if (tokenUrl == null) tokenUrl = settings.getAuthTokenUrl(domain); // 하위 호환
         String serviceKey = settings.getAuthServiceKey(domain);
         if (tokenUrl == null || serviceKey == null) {
             throw new IllegalStateException("Missing auth configuration for domain: " + domain);

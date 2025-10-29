@@ -16,21 +16,17 @@ spring:
 
 # Auth per domain (fill with real values)
 auth:
+  token-url: "https://api.internal/api/data/auth"  # 모든 도메인 공통 Auth URL
   user:
     service-key: "CHANGE_ME_USER"
-    token-url: "https://auth.internal/user/token"
   organization:
     service-key: "CHANGE_ME_ORG"
-    token-url: "https://auth.internal/org/token"
   attend:
     service-key: "CHANGE_ME_ATTEND"
-    token-url: "https://auth.internal/attend/token"
   apply:
     service-key: "CHANGE_ME_APPLY"
-    token-url: "https://auth.internal/apply/token"
   account:
     service-key: "CHANGE_ME_ACCOUNT"
-    token-url: "https://auth.internal/account/token"
 
 # API endpoints
 endpoints:

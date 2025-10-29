@@ -1,20 +1,16 @@
 # Production profile values (fill with real credentials/URLs)
 auth:
+  token-url: "https://api.example.com/api/data/auth"
   user:
     service-key: "PROD_USER_SERVICE_KEY"
-    token-url: "https://auth.example.com/user/token"
   organization:
     service-key: "PROD_ORG_SERVICE_KEY"
-    token-url: "https://auth.example.com/org/token"
   attend:
     service-key: "PROD_ATTEND_SERVICE_KEY"
-    token-url: "https://auth.example.com/attend/token"
   apply:
     service-key: "PROD_APPLY_SERVICE_KEY"
-    token-url: "https://auth.example.com/apply/token"
   account:
     service-key: "PROD_ACCOUNT_SERVICE_KEY"
-    token-url: "https://auth.example.com/account/token"
 
 endpoints:
   user:

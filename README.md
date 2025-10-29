@@ -13,7 +13,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
   - 마스터 잡 `masterJob`: `userJob → organizationJob → attendJob → applyJob → accountJob`
 
 ## 설정 키
-- 인증: `auth.<domain>.service-key`, `auth.<domain>.token-url`
+- 인증: `auth.token-url`(공통), `auth.<domain>.service-key`
 - 엔드포인트(모두 POST + JSON Payload)
   - 독립 도메인: `endpoints.<domain>.list-url` + `endpoints.<domain>.request-payload`(JSON 문자열, 기본 `{}`)
   - 종속 도메인: `endpoints.<domain>.by-user-url-template` + `endpoints.<domain>.by-user-payload-template` (예: `{ "userId": "{userId}" }`)

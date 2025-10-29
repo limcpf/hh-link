@@ -21,6 +21,7 @@ public class AppSettings {
     // 인증/엔드포인트(도메인 문자열 기반)
     public String getAuthServiceKey(String domain) { return env.getProperty("auth." + domain + ".service-key"); }
     public String getAuthTokenUrl(String domain) { return env.getProperty("auth." + domain + ".token-url"); }
+    public String getGlobalAuthTokenUrl() { return env.getProperty("auth.token-url"); }
     public String getListUrl(String domain) { return env.getProperty("endpoints." + domain + ".list-url"); }
     public String getByUserUrlTemplate(String domain) { return env.getProperty("endpoints." + domain + ".by-user-url-template"); }
     public String getRequestPayload(String domain) { return env.getProperty("endpoints." + domain + ".request-payload"); }

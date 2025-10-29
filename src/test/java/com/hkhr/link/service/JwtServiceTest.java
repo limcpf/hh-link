@@ -20,7 +20,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 @SpringBootTest(properties = {
         "auth.user.service-key=TEST_KEY",
-        "auth.user.token-url=http://mock/token"
+        "auth.token-url=http://mock/token"
 })
 @ActiveProfiles("test")
 class JwtServiceTest {
