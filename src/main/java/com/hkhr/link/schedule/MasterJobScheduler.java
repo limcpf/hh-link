@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+// 스케줄러 컴포넌트: 프로퍼티 scheduler.enabled=true 일 때만 등록됩니다.
 @Component
 @ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true")
 public class MasterJobScheduler {
@@ -32,11 +33,12 @@ public class MasterJobScheduler {
         this.jobExplorer = jobExplorer;
     }
 
-    // 매 3분(초 0)에 실행
+    // 매 3분(초 0)에 실행되는 크론 스케줄
     @Scheduled(cron = "0 */3 * * * *")
     public void runMasterJobEvery3Minutes() throws Exception {
         String jobName = masterJob.getName();
         if (!jobExplorer.findRunningJobExecutions(jobName).isEmpty()) {
+            // 중복 실행 방지: 이미 실행 중이면 스킵
             log.info("{} is already running. Skipping this schedule.", jobName);
             return;
         }

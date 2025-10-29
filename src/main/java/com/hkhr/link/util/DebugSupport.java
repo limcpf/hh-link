@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
+// 잡 파라미터 기반 디버깅 지원 유틸리티
 public class DebugSupport {
     public final boolean enabled;
     public final boolean dumpSensitive;
@@ -26,6 +27,7 @@ public class DebugSupport {
         this.baseDir = baseDir;
     }
 
+    // StepExecution에서 잡 파라미터를 읽어 DebugSupport 인스턴스를 생성합니다.
     public static DebugSupport from(StepExecution stepExecution, String outputDir) {
         JobParameters p = stepExecution.getJobParameters();
         boolean enabled = parseBool(p.getString("job.debug"), false);
@@ -39,23 +41,24 @@ public class DebugSupport {
         return new DebugSupport(enabled, dumpSensitive, maxDumps, base);
     }
 
+    // 최대 덤프 횟수(maxDumps)가 설정된 경우, 해당 횟수 이내에서만 true를 반환합니다.
     public boolean shouldDump() {
         if (!enabled) return false;
         if (maxDumps < 0) return true;
         return counter.getAndIncrement() < maxDumps;
     }
 
+    // 지정한 상대 경로로 내용을 UTF-8로 저장합니다(실패 시 배치에 영향 없도록 무시).
     public void write(String relativeFile, String content) {
         if (!enabled) return;
         try {
             Path path = baseDir.resolve(relativeFile);
             Files.createDirectories(path.getParent());
             Files.write(path, content.getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            // Swallow to avoid affecting job; could be logged by caller if desired
-        }
+        } catch (IOException e) { /* 배치에 영향 방지용으로 무시(필요 시 호출부 로깅) */ }
     }
 
+    // 토큰 마스킹 도우미(앞 6, 뒤 4만 남기고 가운데 * 처리)
     public static String maskToken(String token, boolean dumpSensitive) {
         if (token == null) return "";
         if (dumpSensitive) return token;
@@ -65,6 +68,7 @@ public class DebugSupport {
         return t.substring(0, 6) + repeat('*', Math.max(0, n - 10)) + t.substring(n - 4);
     }
 
+    // Authorization 헤더 마스킹(Bearer 토큰 대상)
     public static String maskAuthHeader(String header, boolean dumpSensitive) {
         if (header == null) return "";
         if (dumpSensitive) return header;

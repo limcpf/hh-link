@@ -12,6 +12,7 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
+// 도메인별 JWT를 발급받아 JobExecutionContext에 저장하는 Tasklet
 public class FetchJwtTasklet implements Tasklet {
     private static final Logger log = LoggerFactory.getLogger(FetchJwtTasklet.class);
 
@@ -33,7 +34,7 @@ public class FetchJwtTasklet implements Tasklet {
         if (debug.enabled) {
             JwtService.JwtFetchResult r = jwtService.fetchTokenWithRaw(domain.key());
             token = r.token;
-            // dump request/response and token
+            // 디버그 모드: 요청/응답 및 토큰을(마스킹 적용) 파일로 덤프
             if (debug.shouldDump()) {
                 String masked = DebugSupport.maskToken(token, debug.dumpSensitive);
                 StringBuilder sb = new StringBuilder();
@@ -47,6 +48,7 @@ public class FetchJwtTasklet implements Tasklet {
         } else {
             token = jwtService.fetchToken(domain.key());
         }
+        // 이후 스텝에서 사용하도록 JobExecutionContext에 저장
         stepExecution.getJobExecution().getExecutionContext().putString("jwt." + domain.key(), token);
         log.info("Stored jwt.{} in JobExecutionContext", domain.key());
         return RepeatStatus.FINISHED;

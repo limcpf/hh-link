@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 
+// 공통 재사용 Tasklet
+// - 독립 도메인: list-url로 POST + JSON 요청 1회 → 결과를 <domain>s.json으로 저장
+// - 종속 도메인: users.json의 userId를 순회하며 POST 호출 → 모든 결과를 하나의 배열로 누적 저장
 public class FetchAndSaveJsonTasklet implements Tasklet {
     private static final Logger log = LoggerFactory.getLogger(FetchAndSaveJsonTasklet.class);
 
@@ -49,6 +52,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
     }
 
     @Override
+    // 실제 실행 로직: JWT를 읽어 헤더에 설정하고, 도메인 유형에 따라 호출/저장을 수행합니다.
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         StepExecution stepExecution = chunkContext.getStepContext().getStepExecution();
         DebugSupport debug = DebugSupport.from(stepExecution, settings.getOutputDir());
@@ -62,6 +66,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         Path outPath = Paths.get(settings.getOutputDir(), outFileName);
 
         if (Files.exists(outPath) && !settings.isOverwrite()) {
+            // 안전을 위해 기본은 덮어쓰지 않습니다.
             throw new IllegalStateException("Output file already exists (overwrite=false): " + outPath);
         }
 
@@ -77,6 +82,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
             headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
 
             if (domain.isIndependent()) {
+                // 독립 도메인: 1회 POST 호출
                 String listUrl = settings.getListUrl(domain);
                 if (listUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".list-url");
                 String payload = settings.getRequestPayload(domain);
@@ -97,6 +103,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                     debug.write("api/" + domain.key() + "/resp-list.json", resp.getBody() == null ? "" : resp.getBody());
                 }
             } else {
+                // 종속 도메인: users.json 기반으로 사용자 단위 반복 호출(옵션 병렬)
                 Path usersPath = settings.getUsersJsonPath();
                 if (!Files.exists(usersPath)) {
                     throw new IllegalStateException("Dependent domain requires users.json. Not found: " + usersPath);
@@ -173,6 +180,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         return v.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
+    // 응답 본문을 파싱하여 배열 요소로 추가(배열이면 모든 요소, 객체면 단일 요소)
     private long appendResponseBody(JsonArrayFileWriter writer, String body) throws IOException {
         if (body == null || body.trim().isEmpty()) return 0L;
         JsonNode node = mapper.readTree(body);
@@ -193,6 +201,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         return URLEncoder.encode(Objects.toString(v, ""), StandardCharsets.UTF_8);
     }
 
+    // users.json(최상위 배열)에서 userId 또는 id 필드를 추출합니다.
     private List<String> readUserIds(Path usersJson) throws IOException {
         List<String> ids = new ArrayList<>();
         JsonFactory jf = mapper.getFactory();

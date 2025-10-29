@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+// JSON 파일(users.json 등)에서 EMP_ID/EMP_NM을 추출하여 USERS 테이블에 일괄 INSERT 하는 예시 Tasklet
 public class InsertUsersFromJsonTasklet implements Tasklet {
     private static final Logger log = LoggerFactory.getLogger(InsertUsersFromJsonTasklet.class);
 
@@ -33,6 +34,7 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+        // 잡 파라미터(import.input-file) 우선, 없으면 기본 users.json 경로 사용
         String inputPathParam = (String) chunkContext.getStepContext().getJobParameters().get("import.input-file");
         Path input = StringUtils.hasText(inputPathParam)
                 ? Paths.get(inputPathParam)
@@ -42,15 +44,14 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
             throw new IllegalStateException("Input JSON not found: " + input);
         }
 
+        // 배치 크기 단위로 insertAll 호출
         int batchSize = settings.getDbBatchSize();
         JsonFactory jf = new JsonFactory();
         long total = 0L;
         List<UserRow> batch = new ArrayList<>(batchSize);
 
         try (JsonParser p = jf.createParser(input.toFile())) {
-            if (p.nextToken() != JsonToken.START_ARRAY) {
-                throw new IllegalStateException("Top-level array expected: " + input);
-            }
+            if (p.nextToken() != JsonToken.START_ARRAY) { throw new IllegalStateException("Top-level array expected: " + input); }
             while (p.nextToken() != JsonToken.END_ARRAY) {
                 String empId = null;
                 String empNm = null;
@@ -58,6 +59,7 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
                     while (p.nextToken() != JsonToken.END_OBJECT) {
                         String field = p.getCurrentName();
                         p.nextToken();
+                        // 다양한 필드명을 허용(empId/EMP_ID/userId/id)
                         if ("empId".equals(field) || "EMP_ID".equalsIgnoreCase(field) || "userId".equals(field) || "id".equals(field)) {
                             empId = p.getValueAsString();
                         } else if ("empNm".equals(field) || "EMP_NM".equalsIgnoreCase(field) || "name".equals(field) || "userName".equals(field)) {
@@ -82,6 +84,7 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
+    // 남은 배치를 INSERT 하고 버퍼를 비웁니다.
     private long flush(List<UserRow> batch) {
         if (batch.isEmpty()) return 0L;
         int n = userMapper.insertAll(batch);
@@ -89,4 +92,3 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
         return n;
     }
 }
-

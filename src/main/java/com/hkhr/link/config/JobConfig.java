@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+// 배치 잡/스텝 구성
 @Configuration
 public class JobConfig {
     private final JobBuilderFactory jobBuilderFactory;
@@ -37,6 +38,7 @@ public class JobConfig {
         this.jwtService = jwtService;
     }
 
+    // FetchJWT 스텝(도메인별 토큰 발급)
     private Step fetchJwt(Domain domain) {
         return stepBuilderFactory
                 .get(domain.stepName("fetchJwt"))
@@ -44,6 +46,7 @@ public class JobConfig {
                 .build();
     }
 
+    // FetchAndSave 스텝(도메인별 데이터 수집/파일 저장)
     private Step fetchAndSave(Domain domain) {
         return stepBuilderFactory
                 .get(domain.stepName("fetchAndSave"))
@@ -51,6 +54,7 @@ public class JobConfig {
                 .build();
     }
 
+    // 도메인 Job: FetchJWT → FetchAndSave 순서의 2스텝
     private Job domainJob(Domain domain) {
         JobBuilder jb = jobBuilderFactory.get(domain.jobName());
         return jb.incrementer(new RunIdIncrementer())
@@ -102,6 +106,7 @@ public class JobConfig {
                 .repository(jobRepository)
                 .build();
 
+        // 마스터 Job: user → organization → attend → apply → account 순차 실행
         return jobBuilderFactory.get("masterJob")
                 .incrementer(new RunIdIncrementer())
                 .start(userJobStep)
@@ -112,7 +117,7 @@ public class JobConfig {
                 .build();
     }
 
-    // Example: Import users from JSON to Oracle via MyBatis
+    // 예시: JSON 사용자 목록을 Oracle USERS 테이블에 적재(MyBatis)
     private Step insertUsersStep(UserMapper userMapper) {
         return stepBuilderFactory.get("insertUsersStep")
                 .tasklet(new InsertUsersFromJsonTasklet(settings, userMapper))

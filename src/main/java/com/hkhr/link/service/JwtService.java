@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+// 도메인별 JWT 발급 서비스
 @Service
 public class JwtService {
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
@@ -26,10 +27,12 @@ public class JwtService {
         this.settings = settings;
     }
 
+    // JWT만 필요할 때 간편 호출용 래퍼
     public String fetchToken(String domain) {
         return fetchTokenWithRaw(domain).token;
     }
 
+    // 토큰과 원문 응답을 함께 보관(디버그 덤프 목적)
     public static class JwtFetchResult {
         public final String token;
         public final String rawBody;
@@ -40,6 +43,7 @@ public class JwtService {
         }
     }
 
+    // servicekey 헤더를 포함하여 POST로 토큰을 발급받고, 원문과 추출된 토큰을 반환
     public JwtFetchResult fetchTokenWithRaw(String domain) {
         String tokenUrl = settings.getAuthTokenUrl(domain);
         String serviceKey = settings.getAuthServiceKey(domain);
@@ -72,12 +76,13 @@ public class JwtService {
         }
     }
 
+    // 응답 JSON에서 토큰 값을 추출합니다. 우선순위: jwt > token > access_token > data.*
     private String extractToken(JsonNode json) {
         if (json == null) return null;
         if (json.hasNonNull("token")) return json.get("token").asText();
         if (json.hasNonNull("jwt")) return json.get("jwt").asText();
         if (json.hasNonNull("access_token")) return json.get("access_token").asText();
-        // Try nested common fields
+        // 중첩 필드(data.*)에서도 검색
         if (json.has("data")) {
             JsonNode d = json.get("data");
             if (d.hasNonNull("token")) return d.get("token").asText();

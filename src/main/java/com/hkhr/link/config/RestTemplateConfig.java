@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+// RestTemplate 빈 구성: 연결/읽기 타임아웃을 설정합니다.
 @Configuration
 public class RestTemplateConfig {
     @Bean
@@ -15,4 +16,3 @@ public class RestTemplateConfig {
         return new RestTemplate(f);
     }
 }
-
