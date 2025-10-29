@@ -1,6 +1,10 @@
+com/hkhr/link/util/HttpJsonTest.class
+com/hkhr/link/util/JsonBatchUtilsTest.class
 com/hkhr/link/tasklet/InsertUsersFromJsonTaskletTest.class
 com/hkhr/link/tasklet/FetchAndSaveJsonTaskletTest.class
 com/hkhr/link/ContextLoadTest.class
 com/hkhr/link/schedule/MasterJobSchedulerTest.class
 com/hkhr/link/util/JsonArrayFileWriterTest.class
+com/hkhr/link/util/TemplateUtilsTest.class
 com/hkhr/link/service/JwtServiceTest.class
+com/hkhr/link/util/BatchStepUtilsTest.class
