@@ -34,8 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 // 공통 재사용 Tasklet
 // - 독립 도메인: list-url로 POST + JSON 요청 1회 → 결과를 <domain>s.json으로 저장
@@ -65,13 +63,10 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
             throw new IllegalStateException("JWT for domain '" + domain + "' was not found in context. Ensure FetchJWT step ran before.");
         }
 
-        // 파일명 접미사: YYYYMMDD (requestTime 있으면 해당 날짜, 없으면 오늘)
         String requestTime = stepExecution.getJobParameters().getString("requestTime");
         java.util.Map<String, String> dateVars = TemplateUtils.buildDateVars(requestTime);
-        String date = (requestTime != null && requestTime.length() >= 8) ? requestTime.substring(0, 8)
-                : new SimpleDateFormat("yyyyMMdd").format(new Date());
-        String outFileName = domain.plural() + "-" + date + ".json";
-        Path outPath = Paths.get(settings.getOutputDir(), outFileName);
+        String date = com.hkhr.link.util.BatchStepUtils.resolveDate(stepExecution.getJobParameters());
+        Path outPath = com.hkhr.link.util.BatchStepUtils.outputPathForDomain(settings, domain, date);
 
         if (Files.exists(outPath) && !settings.isOverwrite()) {
             // 안전을 위해 기본은 덮어쓰지 않습니다.
@@ -85,9 +80,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         long failures = 0L;
 
         try (JsonArrayFileWriter writer = new JsonArrayFileWriter(outPath, settings.isPretty())) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            HttpHeaders headers = com.hkhr.link.util.HttpJson.authJsonHeaders(token);
 
             if (domain.isIndependent()) {
                 // 독립 도메인: 1회 POST 호출
@@ -106,8 +99,8 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                     debug.write("api/" + domain.key() + "/req-list.json", reqMeta);
                 }
                 try {
-                    ResponseEntity<String> resp = restTemplate.exchange(listUrl, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
-                    totalItems = appendResponseBody(writer, resp.getBody());
+                    ResponseEntity<String> resp = com.hkhr.link.util.HttpJson.post(restTemplate, listUrl, headers, payload);
+                    totalItems = com.hkhr.link.util.JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
                     log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
                     if (debug.enabled && debug.shouldDump()) {
                         debug.write("api/" + domain.key() + "/resp-list.json", resp.getBody() == null ? "" : resp.getBody());
@@ -131,12 +124,11 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                 }
             } else {
                 // 종속 도메인: users.json 기반으로 사용자 단위 반복 호출(옵션 병렬)
-                // users-YYYYMMDD.json 경로를 동일한 날짜 규칙으로 계산
-                Path usersPath = Paths.get(settings.getOutputDir(), Domain.USER.plural() + "-" + date + ".json");
+                Path usersPath = com.hkhr.link.util.BatchStepUtils.usersPathForDate(settings, date);
                 if (!Files.exists(usersPath)) {
                     throw new IllegalStateException("Dependent domain requires users.json. Not found: " + usersPath);
                 }
-                List<String> userIds = readUserIds(usersPath);
+                List<String> userIds = com.hkhr.link.util.JsonBatchUtils.readUserIds(usersPath, mapper);
                 log.info("{}: will fetch by {} userIds (threads={})", domain.key(), userIds.size(), settings.getMaxThreads());
 
                 ExecutorService pool = settings.getMaxThreads() > 1
@@ -151,7 +143,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                         String payloadTpl = settings.getByUserPayloadTemplate(domain);
                         String payload = payloadTpl != null && !payloadTpl.trim().isEmpty() ? payloadTpl : "{\"userId\":\"{userId}\"}";
                         java.util.Map<String, String> vars = new java.util.HashMap<String, String>(dateVars);
-                        vars.put("userId", escapeJson(userId));
+                        vars.put("userId", com.hkhr.link.util.TemplateUtils.escapeJson(userId));
                         payload = TemplateUtils.apply(payload, vars);
                         try {
                             if (debug.enabled && debug.shouldDump()) {
@@ -165,8 +157,8 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                                 String fname = "api/" + domain.key() + "/req-by-user-" + DebugSupport.sanitize(userId) + ".json";
                                 debug.write(fname, reqMeta);
                             }
-                            ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), String.class);
-                            long added = appendResponseBody(writer, resp.getBody());
+                            ResponseEntity<String> resp = com.hkhr.link.util.HttpJson.post(restTemplate, url, headers, payload);
+                            long added = com.hkhr.link.util.JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
                             if (debug.enabled && debug.shouldDump()) {
                                 String fname = "api/" + domain.key() + "/resp-by-user-" + DebugSupport.sanitize(userId) + ".json";
                                 debug.write(fname, resp.getBody() == null ? "" : resp.getBody());
@@ -221,58 +213,11 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         return RepeatStatus.FINISHED;
     }
 
-    private String escapeJson(String v) {
-        if (v == null) return "";
-        return v.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
-
-    // 응답 본문을 파싱하여 배열 요소로 추가(배열이면 모든 요소, 객체면 단일 요소)
-    private long appendResponseBody(JsonArrayFileWriter writer, String body) throws IOException {
-        if (body == null || body.trim().isEmpty()) return 0L;
-        JsonNode node = mapper.readTree(body);
-        long added = 0L;
-        if (node.isArray()) {
-            for (JsonNode e : node) {
-                writer.writeNode(e);
-                added++;
-            }
-        } else {
-            writer.writeNode(node);
-            added = 1L;
-        }
-        return added;
-    }
+    // 공통 유틸로 이동된 로직들(escapeJson, appendResponseBody, readUserIds)은
+    // TemplateUtils/JsonBatchUtils에 포함되어 있습니다.
 
     private String urlEncode(String v) {
         return URLEncoder.encode(Objects.toString(v, ""), StandardCharsets.UTF_8);
     }
 
-    // users.json(최상위 배열)에서 userId 또는 id 필드를 추출합니다.
-    private List<String> readUserIds(Path usersJson) throws IOException {
-        List<String> ids = new ArrayList<>();
-        JsonFactory jf = mapper.getFactory();
-        try (JsonParser p = jf.createParser(usersJson.toFile())) {
-            if (p.nextToken() != JsonToken.START_ARRAY) {
-                throw new IllegalStateException("users.json must be a top-level array: " + usersJson);
-            }
-            while (p.nextToken() != JsonToken.END_ARRAY) {
-                if (p.currentToken() == JsonToken.START_OBJECT) {
-                    String id = null;
-                    while (p.nextToken() != JsonToken.END_OBJECT) {
-                        String field = p.getCurrentName();
-                        p.nextToken();
-                        if ("userId".equals(field) || "id".equals(field)) {
-                            id = p.getValueAsString();
-                        } else {
-                            p.skipChildren();
-                        }
-                    }
-                    if (id != null) ids.add(id);
-                } else {
-                    p.skipChildren();
-                }
-            }
-        }
-        return ids;
-    }
 }

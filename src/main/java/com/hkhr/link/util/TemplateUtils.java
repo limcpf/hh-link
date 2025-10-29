@@ -8,6 +8,11 @@ import java.util.Map;
 
 // 간단한 템플릿 유틸리티: {변수} 치환
 public class TemplateUtils {
+    // JSON 문자열 값으로 안전하게 치환하기 위한 간단한 이스케이프
+    public static String escapeJson(String v) {
+        if (v == null) return "";
+        return v.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
     public static Map<String, String> buildDateVars(String requestTime) {
         Map<String, String> vars = new HashMap<String, String>();
         Date now = new Date();

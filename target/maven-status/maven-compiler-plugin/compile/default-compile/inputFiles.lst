@@ -1,3 +1,5 @@
+/Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/JsonBatchUtils.java
+/Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/BatchStepUtils.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/db/UserRow.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/tasklet/FetchAndSaveJsonTasklet.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/TemplateUtils.java
@@ -5,6 +7,7 @@
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/schedule/MasterJobScheduler.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/service/JwtService.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/tasklet/FetchJwtTasklet.java
+/Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/HttpJson.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/JsonArrayFileWriter.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/BatchApplication.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/config/JobConfig.java
