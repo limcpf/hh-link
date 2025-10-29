@@ -10,6 +10,9 @@ import com.hkhr.link.domain.Domain;
 import com.hkhr.link.util.JsonArrayFileWriter;
 import com.hkhr.link.util.DebugSupport;
 import com.hkhr.link.util.TemplateUtils;
+import com.hkhr.link.util.BatchStepUtils;
+import com.hkhr.link.util.HttpJson;
+import com.hkhr.link.util.JsonBatchUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -65,8 +68,8 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
 
         String requestTime = stepExecution.getJobParameters().getString("requestTime");
         java.util.Map<String, String> dateVars = TemplateUtils.buildDateVars(requestTime);
-        String date = com.hkhr.link.util.BatchStepUtils.resolveDate(stepExecution.getJobParameters());
-        Path outPath = com.hkhr.link.util.BatchStepUtils.outputPathForDomain(settings, domain, date);
+        String date = BatchStepUtils.resolveDate(stepExecution.getJobParameters());
+        Path outPath = BatchStepUtils.outputPathForDomain(settings, domain, date);
 
         if (Files.exists(outPath) && !settings.isOverwrite()) {
             // 안전을 위해 기본은 덮어쓰지 않습니다.
@@ -80,7 +83,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         long failures = 0L;
 
         try (JsonArrayFileWriter writer = new JsonArrayFileWriter(outPath, settings.isPretty())) {
-            HttpHeaders headers = com.hkhr.link.util.HttpJson.authJsonHeaders(token);
+            HttpHeaders headers = HttpJson.authJsonHeaders(token);
 
             if (domain.isIndependent()) {
                 // 독립 도메인: 1회 POST 호출
@@ -99,8 +102,8 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                     debug.write("api/" + domain.key() + "/req-list.json", reqMeta);
                 }
                 try {
-                    ResponseEntity<String> resp = com.hkhr.link.util.HttpJson.post(restTemplate, listUrl, headers, payload);
-                    totalItems = com.hkhr.link.util.JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
+                    ResponseEntity<String> resp = HttpJson.post(restTemplate, listUrl, headers, payload);
+                    totalItems = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
                     log.info("{}: fetched {} items from {}", domain.key(), totalItems, listUrl);
                     if (debug.enabled && debug.shouldDump()) {
                         debug.write("api/" + domain.key() + "/resp-list.json", resp.getBody() == null ? "" : resp.getBody());
@@ -124,11 +127,11 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                 }
             } else {
                 // 종속 도메인: users.json 기반으로 사용자 단위 반복 호출(옵션 병렬)
-                Path usersPath = com.hkhr.link.util.BatchStepUtils.usersPathForDate(settings, date);
+                Path usersPath = BatchStepUtils.usersPathForDate(settings, date);
                 if (!Files.exists(usersPath)) {
                     throw new IllegalStateException("Dependent domain requires users.json. Not found: " + usersPath);
                 }
-                List<String> userIds = com.hkhr.link.util.JsonBatchUtils.readUserIds(usersPath, mapper);
+                List<String> userIds = JsonBatchUtils.readUserIds(usersPath, mapper);
                 log.info("{}: will fetch by {} userIds (threads={})", domain.key(), userIds.size(), settings.getMaxThreads());
 
                 ExecutorService pool = settings.getMaxThreads() > 1
@@ -143,7 +146,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                         String payloadTpl = settings.getByUserPayloadTemplate(domain);
                         String payload = payloadTpl != null && !payloadTpl.trim().isEmpty() ? payloadTpl : "{\"userId\":\"{userId}\"}";
                         java.util.Map<String, String> vars = new java.util.HashMap<String, String>(dateVars);
-                        vars.put("userId", com.hkhr.link.util.TemplateUtils.escapeJson(userId));
+                        vars.put("userId", TemplateUtils.escapeJson(userId));
                         payload = TemplateUtils.apply(payload, vars);
                         try {
                             if (debug.enabled && debug.shouldDump()) {
@@ -157,8 +160,8 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                                 String fname = "api/" + domain.key() + "/req-by-user-" + DebugSupport.sanitize(userId) + ".json";
                                 debug.write(fname, reqMeta);
                             }
-                            ResponseEntity<String> resp = com.hkhr.link.util.HttpJson.post(restTemplate, url, headers, payload);
-                            long added = com.hkhr.link.util.JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
+                            ResponseEntity<String> resp = HttpJson.post(restTemplate, url, headers, payload);
+                            long added = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
                             if (debug.enabled && debug.shouldDump()) {
                                 String fname = "api/" + domain.key() + "/resp-by-user-" + DebugSupport.sanitize(userId) + ".json";
                                 debug.write(fname, resp.getBody() == null ? "" : resp.getBody());
