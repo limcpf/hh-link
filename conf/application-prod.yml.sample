@@ -63,7 +63,7 @@ http:
 
 # Performance
 fetch:
-  max-threads: 4
+  max-threads: 6
   continue-on-error: false
 
 # Optional: MyBatis batch size for DB import example

@@ -19,7 +19,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
   - 종속 도메인: `endpoints.<domain>.by-user-url-template` + `endpoints.<domain>.by-user-payload-template` (예: `{ "userId": "{userId}" }`)
 - 출력: `output.dir`(기본 `target/out`), `output.overwrite`(기본 false), `output.pretty`(기본 false)
 - HTTP: `http.connect-timeout-ms`, `http.read-timeout-ms`
-- 성능: `fetch.max-threads`(기본 1), `fetch.continue-on-error`(기본 false)
+- 성능: `fetch.max-threads`(기본 6, 상한 6), `fetch.continue-on-error`(기본 false)
 
 ## 빌드/실행
 - 빌드: `mvn -DskipTests clean package`
@@ -89,7 +89,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - 독립 도메인(user, organization): `list-url`로 POST + JSON Payload(`request-payload`) 1회 호출 → 배열이면 항목 병합, 객체면 1개 항목으로 저장
 - 종속 도메인(attend, apply, account): `users.json`의 `userId`(없으면 `id`)를 순회하며 `by-user-url-template`로 POST 호출, Body는 `by-user-payload-template`에 `{userId}` 바인딩. 결과가 배열이면 항목 병합, 객체면 1개 항목으로 저장
 - 실패 정책: 기본 오류 시 Step 실패. `fetch.continue-on-error=true` 시 해당 사용자만 스킵하고 계속
-- 병렬: `fetch.max-threads>1`이면 사용자 단위 병렬 호출. 파일 쓰기는 내부적으로 동기화되어 일관성 유지
+- 병렬: `fetch.max-threads>1`이면 사용자 단위 병렬 호출(상한 6). 파일 쓰기는 내부적으로 동기화되어 일관성 유지
 
 ## 주의사항
 - 토큰 요청 시 헤더 키는 정확히 `servicekey`를 사용합니다.

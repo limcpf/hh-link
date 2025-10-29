@@ -22,7 +22,7 @@ output:
   pretty: false
 
 fetch:
-  max-threads: 1
+  max-threads: 6
   continue-on-error: false
 
 # Place endpoint/auth values in profile-specific files (dev/prod)

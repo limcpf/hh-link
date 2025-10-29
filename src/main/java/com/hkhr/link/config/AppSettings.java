@@ -38,7 +38,10 @@ public class AppSettings {
     }
 
     public int getMaxThreads() {
-        return getInt("fetch.max-threads", 1);
+        int v = getInt("fetch.max-threads", 6);
+        if (v < 1) v = 1;
+        if (v > 6) v = 6; // cap to 6
+        return v;
     }
 
     public boolean isContinueOnError() {
