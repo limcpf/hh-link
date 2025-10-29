@@ -52,7 +52,7 @@ class FetchAndSaveJsonTaskletTest {
         server.verify();
 
         Path out = tmp.resolve("users.json");
-        JsonNode arr = mapper.readTree(Files.readString(out));
+        JsonNode arr = mapper.readTree(new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(arr.isArray()).isTrue();
         assertThat(arr.size()).isEqualTo(2);
 
@@ -64,7 +64,7 @@ class FetchAndSaveJsonTaskletTest {
                 .andRespond(withSuccess("{\"x\":1}", MediaType.APPLICATION_JSON));
         t.execute(new StepContribution(se), new ChunkContext(new StepContext(se)));
         server.verify();
-        arr = mapper.readTree(Files.readString(out));
+        arr = mapper.readTree(new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(arr.size()).isEqualTo(1);
         assertThat(arr.get(0).get("x").asInt()).isEqualTo(1);
     }
@@ -73,7 +73,7 @@ class FetchAndSaveJsonTaskletTest {
     void dependentDomain_iteratesUsersAndFlattens(@org.junit.jupiter.api.io.TempDir Path tmp) throws Exception {
         // Prepare users.json for dependency
         Path users = tmp.resolve("users.json");
-        Files.writeString(users, "[{\"userId\":\"U1\"},{\"userId\":\"U2\"}]");
+        Files.write(users, "[{\"userId\":\"U1\"},{\"userId\":\"U2\"}]".getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
@@ -100,7 +100,7 @@ class FetchAndSaveJsonTaskletTest {
         server.verify();
 
         Path out = tmp.resolve("attends.json");
-        JsonNode arr = mapper.readTree(Files.readString(out));
+        JsonNode arr = mapper.readTree(new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(arr.isArray()).isTrue();
         assertThat(arr.size()).isEqualTo(3);
     }

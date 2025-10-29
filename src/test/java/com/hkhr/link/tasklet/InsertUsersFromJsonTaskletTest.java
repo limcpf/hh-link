@@ -36,7 +36,7 @@ class InsertUsersFromJsonTaskletTest {
                 " {\"id\":\"E4\",\"userName\":\"N4\"},\n" +
                 " {\"noId\":\"skip\"}\n" +
                 "]";
-        Files.writeString(input, json);
+        Files.write(input, json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         // Settings: output.dir to temp, db.batch-size=2
         MockEnvironment env = new MockEnvironment()

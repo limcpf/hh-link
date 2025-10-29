@@ -61,8 +61,8 @@ public class DebugSupport {
         if (dumpSensitive) return token;
         String t = token.trim();
         int n = t.length();
-        if (n <= 10) return "*".repeat(Math.max(0, n));
-        return t.substring(0, 6) + "*".repeat(Math.max(0, n - 10)) + t.substring(n - 4);
+        if (n <= 10) return repeat('*', Math.max(0, n));
+        return t.substring(0, 6) + repeat('*', Math.max(0, n - 10)) + t.substring(n - 4);
     }
 
     public static String maskAuthHeader(String header, boolean dumpSensitive) {
@@ -81,6 +81,13 @@ public class DebugSupport {
         return s.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
 
+    private static String repeat(char ch, int count) {
+        if (count <= 0) return "";
+        char[] arr = new char[count];
+        java.util.Arrays.fill(arr, ch);
+        return new String(arr);
+    }
+
     private static boolean parseBool(String v, boolean def) {
         if (v == null || v.trim().isEmpty()) return def;
         return Boolean.parseBoolean(v.trim());
@@ -91,4 +98,3 @@ public class DebugSupport {
         try { return Integer.parseInt(v.trim()); } catch (NumberFormatException e) { return def; }
     }
 }
-

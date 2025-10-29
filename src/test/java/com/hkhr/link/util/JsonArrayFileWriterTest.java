@@ -19,7 +19,7 @@ class JsonArrayFileWriterTest {
         try (JsonArrayFileWriter w = new JsonArrayFileWriter(out, false)) {
             // no elements
         }
-        String content = Files.readString(out);
+        String content = new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8);
         JsonNode node = mapper.readTree(content);
         assertThat(node.isArray()).isTrue();
         assertThat(node.size()).isEqualTo(0);
@@ -31,7 +31,7 @@ class JsonArrayFileWriterTest {
         try (JsonArrayFileWriter w = new JsonArrayFileWriter(out, false)) {
             w.writeNode(mapper.readTree("{\"a\":1}"));
         }
-        JsonNode node = mapper.readTree(Files.readString(out));
+        JsonNode node = mapper.readTree(new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(node.isArray()).isTrue();
         assertThat(node.size()).isEqualTo(1);
         assertThat(node.get(0).get("a").asInt()).isEqualTo(1);
@@ -45,7 +45,7 @@ class JsonArrayFileWriterTest {
             w.writeNode(mapper.readTree("{\"i\":2}"));
             w.writeNode(mapper.readTree("{\"i\":3}"));
         }
-        JsonNode node = mapper.readTree(Files.readString(out));
+        JsonNode node = mapper.readTree(new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(node.isArray()).isTrue();
         assertThat(node.size()).isEqualTo(3);
         assertThat(node.get(2).get("i").asInt()).isEqualTo(3);
@@ -62,4 +62,3 @@ class JsonArrayFileWriterTest {
         assertThat(node.get(0).get("x").asText()).isEqualTo("y");
     }
 }
-
