@@ -40,6 +40,13 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - 모든 Job(`userJob`, `organizationJob`, `attendJob`, `applyJob`, `accountJob`, `masterJob`)에 `RunIdIncrementer`가 적용되어 있습니다.
 - 동일한 파라미터로도 재실행이 가능하며, 실행마다 `run.id`가 자동 증가합니다.
 
+### 스케줄러 온/오프 (프로세스 종료 제어)
+- 스케줄러 빈은 조건부 등록입니다: `@ConditionalOnProperty(name="scheduler.enabled", havingValue="true")`
+- 단일 잡 1회 실행 후 종료하려면 스케줄러 비활성화:
+  - `--scheduler.enabled=false` (bin/master_prod.sh, bin/job_prod.sh, bin/import_users_prod.sh에 기본 포함)
+- 주기 실행(3분 간격 masterJob) 시 스케줄러 활성화:
+  - `--scheduler.enabled=true` (bin/scheduler_prod.sh에 기본 포함)
+
 ### 잡 파라미터(디버그)
 - `--job.debug=true|false` (기본 false): 디버그 덤프 활성화
 - `--job.debug.dump-sensitive=true|false` (기본 false): 민감정보(JWT/Authorization/Service Key) 마스킹 해제

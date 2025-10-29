@@ -8,6 +8,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Component
+@ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true")
 public class MasterJobScheduler {
     private static final Logger log = LoggerFactory.getLogger(MasterJobScheduler.class);
 
@@ -47,4 +49,3 @@ public class MasterJobScheduler {
         jobLauncher.run(masterJob, params);
     }
 }
-

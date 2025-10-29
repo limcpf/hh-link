@@ -44,6 +44,6 @@ echo "[정보] 실행 잡: ${JOB_NAME}"
 exec java ${JVM_OPTS} -jar "${JAR}" \
   --spring.profiles.active=prod \
   --spring.config.additional-location="file:${CONF_DIR}/" \
+  --scheduler.enabled=false \
   --spring.batch.job.names="${JOB_NAME}" \
   "$@"
-

@@ -33,6 +33,7 @@ JVM_OPTS="${JVM_OPTS:-}"
 CMD=(java ${JVM_OPTS} -jar "${JAR}" \
   --spring.profiles.active=prod \
   --spring.config.additional-location="file:${CONF_DIR}/" \
+  --scheduler.enabled=false \
   --spring.batch.job.names=importUsersJob)
 
 if [[ -n "${INPUT_FILE}" ]]; then
@@ -44,4 +45,3 @@ echo "[정보] CONF_DIR: ${CONF_DIR} (external config)"
 echo "[정보] 실행: ${CMD[*]}"
 
 exec "${CMD[@]}"
-

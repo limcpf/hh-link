@@ -36,5 +36,5 @@ echo "[정보] 모드: 스케줄러만으로 주기 실행 (기동 시 자동 �
 exec java ${JVM_OPTS} -jar "${JAR}" \
   --spring.profiles.active=prod \
   --spring.config.additional-location="file:${CONF_DIR}/" \
+  --scheduler.enabled=true \
   --spring.batch.job.enabled=false
-

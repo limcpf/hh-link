@@ -37,5 +37,5 @@ echo "[정보] CONF_DIR: ${CONF_DIR} (external config)"
 exec java ${JVM_OPTS} -jar "${JAR}" \
   --spring.profiles.active=prod \
   --spring.config.additional-location="file:${CONF_DIR}/" \
+  --scheduler.enabled=false \
   --spring.batch.job.names=masterJob
-
