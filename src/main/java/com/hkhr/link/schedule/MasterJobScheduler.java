@@ -42,7 +42,8 @@ public class MasterJobScheduler {
             log.info("{} is already running. Skipping this schedule.", jobName);
             return;
         }
-        String requestTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        // 요청 시간은 yyyyMMdd 형식만 사용합니다.
+        String requestTime = new SimpleDateFormat("yyyyMMdd").format(new Date());
         JobParameters params = new JobParametersBuilder()
                 .addString("requestTime", requestTime)
                 .addLong("scheduledEpochMs", System.currentTimeMillis())

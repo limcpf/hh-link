@@ -13,24 +13,18 @@ public class TemplateUtils {
         Date now = new Date();
         Date base = now;
         if (requestTime != null && requestTime.trim().length() >= 8) {
-            try {
-                // yyyyMMddHHmmss 또는 yyyyMMdd 형식 지원
-                if (requestTime.trim().length() >= 14) {
-                    base = new SimpleDateFormat("yyyyMMddHHmmss").parse(requestTime.trim());
-                } else {
-                    base = new SimpleDateFormat("yyyyMMdd").parse(requestTime.trim().substring(0, 8));
-                }
-            } catch (ParseException ignored) {
-                base = now;
-            }
+            try { base = new SimpleDateFormat("yyyyMMdd").parse(requestTime.trim().substring(0, 8)); }
+            catch (ParseException ignored) { base = now; }
         }
         SimpleDateFormat dfDate = new SimpleDateFormat("yyyyMMdd");
         SimpleDateFormat dfDateTime = new SimpleDateFormat("yyyyMMddHHmmss");
         SimpleDateFormat dfYYYY = new SimpleDateFormat("yyyy");
         SimpleDateFormat dfMM = new SimpleDateFormat("MM");
         SimpleDateFormat dfDD = new SimpleDateFormat("dd");
-        vars.put("request_date", dfDate.format(base));
-        vars.put("request_datetime", dfDateTime.format(base));
+        String dateStr = dfDate.format(base);
+        vars.put("request_date", dateStr);
+        // 시간은 요구사항에 따라 제거(정해진 시각이 없다면 000000으로 고정)
+        vars.put("request_datetime", dateStr + "000000");
         vars.put("yyyy", dfYYYY.format(base));
         vars.put("MM", dfMM.format(base));
         vars.put("dd", dfDD.format(base));
@@ -46,4 +40,3 @@ public class TemplateUtils {
         return out;
     }
 }
-

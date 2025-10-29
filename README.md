@@ -25,11 +25,11 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - 빌드: `mvn -DskipTests clean package`
 - 실행(마스터 잡):
   ```bash
-  java -jar target/hkhr-link-batch-0.1.0-SNAPSHOT.jar --spring.batch.job.names=masterJob
+  java -jar target/hkhr-link-batch-0.1.0-SNAPSHOT.jar --spring.batch.job.names=masterJob --requestTime=20250101
   ```
 - 개별 잡 실행 예:
   ```bash
-  java -jar target/hkhr-link-batch-0.1.0-SNAPSHOT.jar --spring.batch.job.names=userJob
+  java -jar target/hkhr-link-batch-0.1.0-SNAPSHOT.jar --spring.batch.job.names=userJob --requestTime=20250101
   ```
 - 프로필 전환:
   ```bash
@@ -51,7 +51,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - `--job.debug=true|false` (기본 false): 디버그 덤프 활성화
 - `--job.debug.dump-sensitive=true|false` (기본 false): 민감정보(JWT/Authorization/Service Key) 마스킹 해제
 - `--job.debug.max-dumps=N` (기본 무제한): 종속 도메인 사용자별 요청/응답 덤프 개수 제한
-- 덤프 위치: `<output.dir>/debug/<requestTime 또는 실행시각>/`
+  - 덤프 위치: `<output.dir>/debug/<requestTime(yyyyMMdd) 또는 실행시각>/`
   - JWT: `jwt/jwt-<domain>.txt`, `jwt/token-response-<domain>.json`
   - 독립 도메인: `api/<domain>/req-list.json`, `api/<domain>/resp-list.json`
   - 종속 도메인: `api/<domain>/req-by-user-<userId>.json`, `api/<domain>/resp-by-user-<userId>.json`
@@ -79,6 +79,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
   - 수동 DDL 사용 시: `spring.batch.jdbc.initialize-schema=never`
   - 사설 CA 사용 시 JVM 옵션으로 truststore 지정(예시):
     `-Djavax.net.ssl.trustStore=/path/truststore.jks -Djavax.net.ssl.trustStorePassword=*****`
+  - requestTime 형식: `yyyyMMdd` (예: 20250101)
 
 ## 산출물
 - 파일명 규칙: `<domain>s-YYYYMMDD.json` (예: `users-20250101.json`)
