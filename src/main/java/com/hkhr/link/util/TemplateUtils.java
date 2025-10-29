@@ -22,7 +22,8 @@ public class TemplateUtils {
         SimpleDateFormat dfMM = new SimpleDateFormat("MM");
         SimpleDateFormat dfDD = new SimpleDateFormat("dd");
         String dateStr = dfDate.format(base);
-        vars.put("request_date", dateStr);
+        vars.put("request_date", dateStr); // 하위 호환
+        vars.put("date", dateStr);         // 권장 변수명
         // 시간은 요구사항에 따라 제거(정해진 시각이 없다면 000000으로 고정)
         vars.put("request_datetime", dateStr + "000000");
         vars.put("yyyy", dfYYYY.format(base));

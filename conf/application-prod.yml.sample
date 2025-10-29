@@ -36,19 +36,19 @@ auth:
 endpoints:
   user:
     list-url: "https://api.internal/users"
-    request-payload: '{"date":"{request_date}"}'
+    request-payload: '{"date":"{date}"}'
   organization:
     list-url: "https://api.internal/organizations"
-    request-payload: '{"date":"{request_date}"}'
+    request-payload: '{"date":"{date}"}'
   attend:
     by-user-url-template: "https://api.internal/attend"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{request_date}"}'
+    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
   apply:
     by-user-url-template: "https://api.internal/apply"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{request_date}"}'
+    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
   account:
     by-user-url-template: "https://api.internal/accounts"
-    by-user-payload-template: '{"userId": "{userId}", "date":"{request_date}"}'
+    by-user-payload-template: '{"userId": "{userId}", "date":"{date}"}'
 
 # Output
 output:

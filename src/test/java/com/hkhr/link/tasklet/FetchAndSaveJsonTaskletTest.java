@@ -33,7 +33,7 @@ class FetchAndSaveJsonTaskletTest {
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
                 .withProperty("endpoints.user.list-url", "http://mock/users")
-                .withProperty("endpoints.user.request-payload", "{\"date\":\"{request_date}\"}");
+                .withProperty("endpoints.user.request-payload", "{\"date\":\"{date}\"}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
@@ -85,7 +85,7 @@ class FetchAndSaveJsonTaskletTest {
                 .withProperty("output.dir", tmp.toString())
                 .withProperty("fetch.max-threads", "1")
                 .withProperty("endpoints.attend.by-user-url-template", "http://mock/attend")
-                .withProperty("endpoints.attend.by-user-payload-template", "{\"userId\":\"{userId}\",\"date\":\"{request_date}\"}");
+                .withProperty("endpoints.attend.by-user-payload-template", "{\"userId\":\"{userId}\",\"date\":\"{date}\"}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
