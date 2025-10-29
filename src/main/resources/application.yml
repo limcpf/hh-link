@@ -18,7 +18,7 @@ http:
 
 output:
   dir: target/out
-  overwrite: false
+  overwrite: true
   pretty: false
 
 fetch:

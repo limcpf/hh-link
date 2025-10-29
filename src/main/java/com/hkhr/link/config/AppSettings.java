@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // 환경변수/프로퍼티에서 배치 설정 값을 읽어오는 헬퍼 컴포넌트
 @Component
@@ -53,14 +55,15 @@ public class AppSettings {
         return getBool("output.pretty", false);
     }
 
-    public boolean isOverwrite() {
-        return getBool("output.overwrite", false);
-    }
+    public boolean isOverwrite() { return getBool("output.overwrite", true); }
 
     public String getOutputDir() { return env.getProperty("output.dir", "target/out"); }
 
-    // 종속 도메인 참조용 users.json 경로
-    public Path getUsersJsonPath() { return Paths.get(getOutputDir(), Domain.USER.plural() + ".json"); }
+    // 종속 도메인 참조용 users-YYYYMMDD.json 경로(오늘 날짜 기준)
+    public Path getUsersJsonPath() {
+        String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        return Paths.get(getOutputDir(), Domain.USER.plural() + "-" + date + ".json");
+    }
 
     public int getDbBatchSize() { return getInt("db.batch-size", 500); }
 

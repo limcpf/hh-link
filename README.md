@@ -17,7 +17,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
 - 엔드포인트(모두 POST + JSON Payload)
   - 독립 도메인: `endpoints.<domain>.list-url` + `endpoints.<domain>.request-payload`(JSON 문자열, 기본 `{}`)
   - 종속 도메인: `endpoints.<domain>.by-user-url-template` + `endpoints.<domain>.by-user-payload-template` (예: `{ "userId": "{userId}" }`)
-- 출력: `output.dir`(기본 `target/out`), `output.overwrite`(기본 false), `output.pretty`(기본 false)
+- 출력: `output.dir`(기본 `target/out`), `output.overwrite`(기본 true), `output.pretty`(기본 false)
 - HTTP: `http.connect-timeout-ms`, `http.read-timeout-ms`
 - 성능: `fetch.max-threads`(기본 6, 상한 6), `fetch.continue-on-error`(기본 false)
 
@@ -81,7 +81,7 @@ JDK 8, Spring Boot 2.7.x + Spring Batch 4.x 기반의 단순 배치. 도메인�
     `-Djavax.net.ssl.trustStore=/path/truststore.jks -Djavax.net.ssl.trustStorePassword=*****`
 
 ## 산출물
-- `target/out/users.json`, `organizations.json`, `attends.json`, `applies.json`, `accounts.json`
+- 파일명 규칙: `<domain>s-YYYYMMDD.json` (예: `users-20250101.json`)
 - 모두 "최상위 배열" 구조로 스트리밍 방식으로 저장됩니다.
 
 ## 구현 메모

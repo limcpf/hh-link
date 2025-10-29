@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 // 공통 재사용 Tasklet
 // - 독립 도메인: list-url로 POST + JSON 요청 1회 → 결과를 <domain>s.json으로 저장
@@ -62,7 +64,11 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
             throw new IllegalStateException("JWT for domain '" + domain + "' was not found in context. Ensure FetchJWT step ran before.");
         }
 
-        String outFileName = domain.plural() + ".json";
+        // 파일명 접미사: YYYYMMDD (requestTime 있으면 해당 날짜, 없으면 오늘)
+        String requestTime = stepExecution.getJobParameters().getString("requestTime");
+        String date = (requestTime != null && requestTime.length() >= 8) ? requestTime.substring(0, 8)
+                : new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String outFileName = domain.plural() + "-" + date + ".json";
         Path outPath = Paths.get(settings.getOutputDir(), outFileName);
 
         if (Files.exists(outPath) && !settings.isOverwrite()) {
@@ -122,7 +128,8 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                 }
             } else {
                 // 종속 도메인: users.json 기반으로 사용자 단위 반복 호출(옵션 병렬)
-                Path usersPath = settings.getUsersJsonPath();
+                // users-YYYYMMDD.json 경로를 동일한 날짜 규칙으로 계산
+                Path usersPath = Paths.get(settings.getOutputDir(), Domain.USER.plural() + "-" + date + ".json");
                 if (!Files.exists(usersPath)) {
                     throw new IllegalStateException("Dependent domain requires users.json. Not found: " + usersPath);
                 }

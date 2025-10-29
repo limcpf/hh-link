@@ -28,7 +28,8 @@ class InsertUsersFromJsonTaskletTest {
     void parsesVariousFieldNames_andFlushesByBatchSize() throws Exception {
         // Prepare temp dir and input JSON
         Path tmp = Files.createTempDirectory("users-json-test");
-        Path input = tmp.resolve("users.json");
+        String date = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
+        Path input = tmp.resolve("users-" + date + ".json");
         String json = "[\n" +
                 " {\"empId\":\"E1\",\"empNm\":\"N1\"},\n" +
                 " {\"EMP_ID\":\"E2\",\"EMP_NM\":\"N2\"},\n" +
