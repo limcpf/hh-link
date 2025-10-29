@@ -7,6 +7,7 @@ com/hkhr/link/util/DebugSupport.class
 com/hkhr/link/config/RestTemplateConfig.class
 com/hkhr/link/tasklet/FetchAndSaveJsonTasklet.class
 com/hkhr/link/config/JobConfig.class
+com/hkhr/link/util/TemplateUtils.class
 com/hkhr/link/tasklet/FetchJwtTasklet.class
 com/hkhr/link/db/UserRow.class
 com/hkhr/link/service/JwtService$JwtFetchResult.class

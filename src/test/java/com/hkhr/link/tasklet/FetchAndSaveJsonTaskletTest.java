@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 
 class FetchAndSaveJsonTaskletTest {
     private final ObjectMapper mapper = new ObjectMapper();
@@ -32,15 +33,17 @@ class FetchAndSaveJsonTaskletTest {
         MockEnvironment env = new MockEnvironment()
                 .withProperty("output.dir", tmp.toString())
                 .withProperty("endpoints.user.list-url", "http://mock/users")
-                .withProperty("endpoints.user.request-payload", "{\"active\":true}");
+                .withProperty("endpoints.user.request-payload", "{\"date\":\"{request_date}\"}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(rt);
 
         // First run: array response
+        String date = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
         server.expect(requestTo("http://mock/users"))
                 .andExpect(method(HttpMethod.POST))
+                .andExpect(content().string("{\"date\":\"" + date + "\"}"))
                 .andRespond(withSuccess("[{\"a\":1},{\"b\":2}]", MediaType.APPLICATION_JSON));
 
         FetchAndSaveJsonTasklet t = new FetchAndSaveJsonTasklet(Domain.USER, settings, rt);
@@ -51,7 +54,7 @@ class FetchAndSaveJsonTaskletTest {
         t.execute(sc, cc);
         server.verify();
 
-        String date = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
+        // date 변수는 위에서 계산된 값을 재사용합니다.
         Path out = tmp.resolve("users-" + date + ".json");
         JsonNode arr = mapper.readTree(new String(Files.readAllBytes(out), java.nio.charset.StandardCharsets.UTF_8));
         assertThat(arr.isArray()).isTrue();
@@ -62,6 +65,7 @@ class FetchAndSaveJsonTaskletTest {
         server.reset();
         server.expect(requestTo("http://mock/users"))
                 .andExpect(method(HttpMethod.POST))
+                .andExpect(content().string("{\"date\":\"" + date + "\"}"))
                 .andRespond(withSuccess("{\"x\":1}", MediaType.APPLICATION_JSON));
         t.execute(new StepContribution(se), new ChunkContext(new StepContext(se)));
         server.verify();
@@ -81,16 +85,18 @@ class FetchAndSaveJsonTaskletTest {
                 .withProperty("output.dir", tmp.toString())
                 .withProperty("fetch.max-threads", "1")
                 .withProperty("endpoints.attend.by-user-url-template", "http://mock/attend")
-                .withProperty("endpoints.attend.by-user-payload-template", "{\"userId\":\"{userId}\"}");
+                .withProperty("endpoints.attend.by-user-payload-template", "{\"userId\":\"{userId}\",\"date\":\"{request_date}\"}");
         AppSettings settings = new AppSettings(env);
 
         RestTemplate rt = new RestTemplate();
         MockRestServiceServer server = MockRestServiceServer.createServer(rt);
         server.expect(requestTo("http://mock/attend"))
                 .andExpect(method(HttpMethod.POST))
+                .andExpect(content().string("{\"userId\":\"U1\",\"date\":\"" + d + "\"}"))
                 .andRespond(withSuccess("{\"u\":\"U1\"}", MediaType.APPLICATION_JSON));
         server.expect(requestTo("http://mock/attend"))
                 .andExpect(method(HttpMethod.POST))
+                .andExpect(content().string("{\"userId\":\"U2\",\"date\":\"" + d + "\"}"))
                 .andRespond(withSuccess("[{\"u\":\"U2a\"},{\"u\":\"U2b\"}]", MediaType.APPLICATION_JSON));
 
         FetchAndSaveJsonTasklet t = new FetchAndSaveJsonTasklet(Domain.ATTEND, settings, rt);

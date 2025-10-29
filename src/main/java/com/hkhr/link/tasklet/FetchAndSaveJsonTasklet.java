@@ -9,6 +9,7 @@ import com.hkhr.link.config.AppSettings;
 import com.hkhr.link.domain.Domain;
 import com.hkhr.link.util.JsonArrayFileWriter;
 import com.hkhr.link.util.DebugSupport;
+import com.hkhr.link.util.TemplateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.StepContribution;
@@ -66,6 +67,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
 
         // 파일명 접미사: YYYYMMDD (requestTime 있으면 해당 날짜, 없으면 오늘)
         String requestTime = stepExecution.getJobParameters().getString("requestTime");
+        java.util.Map<String, String> dateVars = TemplateUtils.buildDateVars(requestTime);
         String date = (requestTime != null && requestTime.length() >= 8) ? requestTime.substring(0, 8)
                 : new SimpleDateFormat("yyyyMMdd").format(new Date());
         String outFileName = domain.plural() + "-" + date + ".json";
@@ -93,6 +95,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                 if (listUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".list-url");
                 String payload = settings.getRequestPayload(domain);
                 if (payload == null || payload.trim().isEmpty()) payload = "{}";
+                else payload = TemplateUtils.apply(payload, dateVars);
                 if (debug.enabled && debug.shouldDump()) {
                     String reqMeta = "{\n" +
                             "  \"method\": \"POST\",\n" +
@@ -147,7 +150,9 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
                         String url = tpl.replace("{userId}", urlEncode(userId));
                         String payloadTpl = settings.getByUserPayloadTemplate(domain);
                         String payload = payloadTpl != null && !payloadTpl.trim().isEmpty() ? payloadTpl : "{\"userId\":\"{userId}\"}";
-                        payload = payload.replace("{userId}", escapeJson(userId));
+                        java.util.Map<String, String> vars = new java.util.HashMap<String, String>(dateVars);
+                        vars.put("userId", escapeJson(userId));
+                        payload = TemplateUtils.apply(payload, vars);
                         try {
                             if (debug.enabled && debug.shouldDump()) {
                                 String reqMeta = "{\n" +

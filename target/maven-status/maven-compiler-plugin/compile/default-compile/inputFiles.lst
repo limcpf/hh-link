@@ -1,5 +1,6 @@
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/db/UserRow.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/tasklet/FetchAndSaveJsonTasklet.java
+/Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/util/TemplateUtils.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/config/AppSettings.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/schedule/MasterJobScheduler.java
 /Users/lim/Prj/others/hkhr-link/src/main/java/com/hkhr/link/service/JwtService.java
