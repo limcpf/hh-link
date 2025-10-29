@@ -51,13 +51,10 @@ public class JwtService {
             throw new IllegalStateException("Missing auth configuration for domain: " + domain);
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("servicekey", serviceKey);
-        HttpEntity<Void> req = new HttpEntity<>(headers);
+        HttpHeaders headers = com.hkhr.link.util.HttpJson.serviceKeyHeaders(serviceKey);
 
         try {
-            ResponseEntity<String> resp = restTemplate.exchange(tokenUrl, HttpMethod.POST, req, String.class);
+            ResponseEntity<String> resp = com.hkhr.link.util.HttpJson.postNoBody(restTemplate, tokenUrl, headers);
             if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
                 throw new IllegalStateException("Token endpoint non-2xx for domain " + domain + ": " + resp.getStatusCode());
             }
