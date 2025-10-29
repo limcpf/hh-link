@@ -49,7 +49,7 @@ public class JwtService {
         if (tokenUrl == null) tokenUrl = settings.getAuthTokenUrl(domain); // 하위 호환
         String serviceKey = settings.getAuthServiceKey(domain);
         if (tokenUrl == null || serviceKey == null) {
-            throw new IllegalStateException("Missing auth configuration for domain: " + domain);
+            throw new IllegalStateException("Missing auth configuration for domain: " + domain + " - 도메인에 대한 인증 설정이 없습니다: " + domain);
         }
 
         HttpHeaders headers = com.hkhr.link.util.HttpJson.serviceKeyHeaders(serviceKey);
@@ -57,20 +57,20 @@ public class JwtService {
         try {
             ResponseEntity<String> resp = com.hkhr.link.util.HttpJson.postNoBody(restTemplate, tokenUrl, headers);
             if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
-                throw new IllegalStateException("Token endpoint non-2xx for domain " + domain + ": " + resp.getStatusCode());
+                throw new IllegalStateException("Token endpoint non-2xx for domain " + domain + ": " + resp.getStatusCode() + " - 토큰 엔드포인트 응답 코드가 2xx가 아닙니다");
             }
             String raw = resp.getBody();
             JsonNode json = objectMapper.readTree(raw);
             String token = extractToken(json);
             if (token == null || token.isEmpty()) {
-                throw new IllegalStateException("Token not found in response for domain " + domain);
+                throw new IllegalStateException("Token not found in response for domain " + domain + " - 응답에서 토큰을 찾을 수 없습니다");
             }
-            log.info("Fetched JWT for domain {}", domain);
+            log.info("Fetched JWT for domain {} - 도메인 JWT 발급 완료", domain);
             return new JwtFetchResult(token, raw);
         } catch (RestClientResponseException e) {
-            throw new IllegalStateException("Token request failed for domain " + domain + ": " + e.getRawStatusCode() + " " + e.getResponseBodyAsString(), e);
+            throw new IllegalStateException("Token request failed for domain " + domain + ": " + e.getRawStatusCode() + " " + e.getResponseBodyAsString() + " - 토큰 요청 실패", e);
         } catch (Exception e) {
-            throw new IllegalStateException("Token request failed for domain " + domain + ": " + e.getMessage(), e);
+            throw new IllegalStateException("Token request failed for domain " + domain + ": " + e.getMessage() + " - 토큰 요청 실패", e);
         }
     }
 

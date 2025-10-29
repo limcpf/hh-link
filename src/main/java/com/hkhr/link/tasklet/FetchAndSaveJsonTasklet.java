@@ -64,7 +64,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         String token = stepExecution.getJobExecution()
                 .getExecutionContext().getString("jwt." + domain.key(), null);
         if (token == null) {
-            throw new IllegalStateException("JWT for domain '" + domain + "' was not found in context. Ensure FetchJWT step ran before.");
+            throw new IllegalStateException("JWT for domain '" + domain + "' was not found in context. Ensure FetchJWT step ran before. - 도메인 JWT가 컨텍스트에 없습니다. FetchJWT 스텝이 먼저 실행되어야 합니다.");
         }
 
         String requestTime = stepExecution.getJobParameters().getString("requestTime");
@@ -74,7 +74,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
 
         if (Files.exists(outPath) && !settings.isOverwrite()) {
             // 안전을 위해 기본은 덮어쓰지 않습니다.
-            throw new IllegalStateException("Output file already exists (overwrite=false): " + outPath);
+            throw new IllegalStateException("Output file already exists (overwrite=false): " + outPath + " - 출력 파일이 이미 존재합니다(overwrite=false): " + outPath);
         }
 
         Files.createDirectories(outPath.getParent());
@@ -88,7 +88,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
 
             // 모든 도메인을 단일 API 호출로 처리
             String apiUrl = settings.getApiUrl(domain);
-            if (apiUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".url");
+            if (apiUrl == null) throw new IllegalStateException("Missing endpoints." + domain.key() + ".url - API URL 설정이 없습니다");
 
             String payload = settings.getRequestPayload(domain);
             if (payload == null || payload.trim().isEmpty()) payload = "{}";
@@ -101,7 +101,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
             try {
                 ResponseEntity<String> resp = HttpJson.post(restTemplate, apiUrl, headers, payload);
                 totalItems = JsonBatchUtils.appendBody(writer, mapper, resp.getBody());
-                log.info("{}: fetched {} items from {}", domain.key(), totalItems, apiUrl);
+                log.info("{}: fetched {} items from {} - 항목 조회 완료: {}건, URL: {}", domain.key(), totalItems, apiUrl, totalItems, apiUrl);
                 if (debug.enabled) DebugDumpUtils.dumpListResponse(debug, domain.key(), resp.getBody());
             } catch (Exception e) {
                 if (debug.enabled) DebugDumpUtils.dumpListError(debug, domain.key(), apiUrl,
@@ -111,7 +111,7 @@ public class FetchAndSaveJsonTasklet implements Tasklet {
         }
 
         long elapsed = System.currentTimeMillis() - start;
-        log.info("{}: done. totalItems={}, failures={}, elapsedMs={}", domain.key(), totalItems, failures, elapsed);
+        log.info("{}: done. totalItems={}, failures={}, elapsedMs={} - 처리 완료", domain.key(), totalItems, failures, elapsed);
         return RepeatStatus.FINISHED;
     }
 

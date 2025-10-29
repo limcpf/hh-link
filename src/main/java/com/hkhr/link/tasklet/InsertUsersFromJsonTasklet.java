@@ -41,7 +41,7 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
                 : settings.getUsersJsonPath();
 
         if (!Files.exists(input)) {
-            throw new IllegalStateException("Input JSON not found: " + input);
+            throw new IllegalStateException("Input JSON not found: " + input + " - 입력 JSON을 찾을 수 없습니다: " + input);
         }
 
         // 배치 크기 단위로 insertAll 호출
@@ -51,7 +51,7 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
         List<UserRow> batch = new ArrayList<>(batchSize);
 
         try (JsonParser p = jf.createParser(input.toFile())) {
-            if (p.nextToken() != JsonToken.START_ARRAY) { throw new IllegalStateException("Top-level array expected: " + input); }
+            if (p.nextToken() != JsonToken.START_ARRAY) { throw new IllegalStateException("Top-level array expected: " + input + " - 최상위 배열 구조여야 합니다: " + input); }
             while (p.nextToken() != JsonToken.END_ARRAY) {
                 String empId = null;
                 String empNm = null;
@@ -80,7 +80,7 @@ public class InsertUsersFromJsonTasklet implements Tasklet {
             }
         }
         total += flush(batch);
-        log.info("Inserted USERS rows: {} from {}", total, input);
+        log.info("Inserted USERS rows: {} from {} - USERS 행 삽입 완료: {}건, 입력: {}", total, input, total, input);
         return RepeatStatus.FINISHED;
     }
 

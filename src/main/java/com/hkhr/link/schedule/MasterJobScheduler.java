@@ -39,7 +39,7 @@ public class MasterJobScheduler {
         String jobName = masterJob.getName();
         if (!jobExplorer.findRunningJobExecutions(jobName).isEmpty()) {
             // 중복 실행 방지: 이미 실행 중이면 스킵
-            log.info("{} is already running. Skipping this schedule.", jobName);
+            log.info("{} is already running. Skipping this schedule. - 이미 실행 중입니다. 이번 스케줄은 건너뜁니다.", jobName);
             return;
         }
         // 요청 시간은 yyyyMMdd 형식만 사용합니다.
@@ -48,7 +48,7 @@ public class MasterJobScheduler {
                 .addString("requestTime", requestTime)
                 .addLong("scheduledEpochMs", System.currentTimeMillis())
                 .toJobParameters();
-        log.info("Scheduling {} with requestTime={}.", jobName, requestTime);
+        log.info("Scheduling {} with requestTime={}. - 스케줄링 시작", jobName, requestTime);
         jobLauncher.run(masterJob, params);
     }
 }

@@ -29,7 +29,7 @@ public class DebugDumpUtils {
         sb.append("auth=").append(authMasked).append('\n');
         sb.append("payload=").append(payload).append('\n');
         appendHttpDetails(sb, e);
-        sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
+        sb.append("stacktrace= - 스택트레이스\n").append(DebugSupport.stackTrace(e));
         debug.write("api/" + domainKey + "/error-list.txt", sb.toString());
     }
 
@@ -61,7 +61,7 @@ public class DebugDumpUtils {
         sb.append("auth=").append(authMasked).append('\n');
         sb.append("payload=").append(payload).append('\n');
         appendHttpDetails(sb, e);
-        sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
+        sb.append("stacktrace= - 스택트레이스\n").append(DebugSupport.stackTrace(e));
         String fname = "api/" + domainKey + "/error-by-user-" + DebugSupport.sanitize(userId) + ".txt";
         debug.write(fname, sb.toString());
     }
@@ -73,7 +73,7 @@ public class DebugDumpUtils {
         sb.append("tokenUrl=").append(tokenUrl).append('\n');
         sb.append("serviceKey=").append(serviceKeyMasked).append('\n');
         appendHttpDetails(sb, e);
-        sb.append("stacktrace=\n").append(DebugSupport.stackTrace(e));
+        sb.append("stacktrace= - 스택트레이스\n").append(DebugSupport.stackTrace(e));
         debug.write("jwt/error-jwt-" + domainKey + ".txt", sb.toString());
     }
 
