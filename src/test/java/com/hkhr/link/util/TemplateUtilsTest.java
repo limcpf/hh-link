@@ -17,9 +17,15 @@ class TemplateUtilsTest {
         assertThat(v.get("MM")).isEqualTo("01");
         assertThat(v.get("dd")).isEqualTo("01");
         assertThat(v.get("boy")).isEqualTo("20250101");
+        assertThat(v.get("year_start")).isEqualTo("20250101");
+        assertThat(v.get("start_of_year")).isEqualTo("20250101");
         assertThat(v.get("eoy")).isEqualTo("20251231");
+        assertThat(v.get("year_end")).isEqualTo("20251231");
+        assertThat(v.get("end_of_year")).isEqualTo("20251231");
         assertThat(v.get("date_last_year")).isEqualTo("20240101");
+        assertThat(v.get("date_prev_year")).isEqualTo("20240101");
         assertThat(v.get("yyyy_last")).isEqualTo("2024");
+        assertThat(v.get("year_prev")).isEqualTo("2024");
     }
 
     @Test
@@ -37,4 +43,3 @@ class TemplateUtilsTest {
         assertThat(e).isEqualTo("\\\\\\\"");
     }
 }
-

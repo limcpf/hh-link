@@ -45,19 +45,25 @@ public class TemplateUtils {
         boy.set(Calendar.MONTH, Calendar.JANUARY);
         boy.set(Calendar.DAY_OF_MONTH, 1);
         vars.put("boy", dfDate.format(boy.getTime()));
+        vars.put("year_start", dfDate.format(boy.getTime()));
+        vars.put("start_of_year", dfDate.format(boy.getTime()));
 
         // 연말일 yyyy1231
         Calendar eoy = (Calendar) cal.clone();
         eoy.set(Calendar.MONTH, Calendar.DECEMBER);
         eoy.set(Calendar.DAY_OF_MONTH, 31);
         vars.put("eoy", dfDate.format(eoy.getTime()));
+        vars.put("year_end", dfDate.format(eoy.getTime()));
+        vars.put("end_of_year", dfDate.format(eoy.getTime()));
 
         // 1년 전 같은 월/일
         Calendar lastYear = (Calendar) cal.clone();
         lastYear.add(Calendar.YEAR, -1);
         vars.put("date_last_year", dfDate.format(lastYear.getTime()));
+        vars.put("date_prev_year", dfDate.format(lastYear.getTime()));
         // 조합용: 작년 연도(yyyy-1)
         vars.put("yyyy_last", new SimpleDateFormat("yyyy").format(lastYear.getTime()));
+        vars.put("year_prev", new SimpleDateFormat("yyyy").format(lastYear.getTime()));
         return vars;
     }
 
