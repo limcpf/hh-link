@@ -2,6 +2,7 @@ package com.hkhr.link.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,29 @@ public class TemplateUtils {
         vars.put("yyyy", dfYYYY.format(base));
         vars.put("MM", dfMM.format(base));
         vars.put("dd", dfDD.format(base));
+
+        // 추가 파생 변수들
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(base);
+
+        // 연초일 yyyy0101
+        Calendar boy = (Calendar) cal.clone();
+        boy.set(Calendar.MONTH, Calendar.JANUARY);
+        boy.set(Calendar.DAY_OF_MONTH, 1);
+        vars.put("boy", dfDate.format(boy.getTime()));
+
+        // 연말일 yyyy1231
+        Calendar eoy = (Calendar) cal.clone();
+        eoy.set(Calendar.MONTH, Calendar.DECEMBER);
+        eoy.set(Calendar.DAY_OF_MONTH, 31);
+        vars.put("eoy", dfDate.format(eoy.getTime()));
+
+        // 1년 전 같은 월/일
+        Calendar lastYear = (Calendar) cal.clone();
+        lastYear.add(Calendar.YEAR, -1);
+        vars.put("date_last_year", dfDate.format(lastYear.getTime()));
+        // 조합용: 작년 연도(yyyy-1)
+        vars.put("yyyy_last", new SimpleDateFormat("yyyy").format(lastYear.getTime()));
         return vars;
     }
 
